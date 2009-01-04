@@ -2,6 +2,7 @@
 "        File:  ChineseIME.vim
 "      Author:  Sean Ma <maxiangjiang_at_gmail.com>
 " Last Change:  January 3, 2009
+"         URL:  http://vim.sourceforge.net/scripts/script.php?script_id=2506 
 " Description:  This is a vim plugin used as an independent built-in
 "               IME (Input Method Editor) to input Chinese using vim
 "               omni completion feature. The input method could be
@@ -62,7 +63,6 @@
 " ---------------------------------------------------------------
 "  Tips:
 "  (1) i_<C-^> can be mapped to pick up the default right away:
-"      im  <silent><C-^>  <C-X><C-U><C-U><C-P><C-N>
 "  (2) The data file can also include English as the key
 "  (3) The sequence of data file can be adjusted based on frequency
 "  (4) Reference #5 may be used to automatically open the popup menu
@@ -76,20 +76,28 @@ let loaded_ChineseIME = 1
 " ===============================================================
 "                         VIM Control Logic
 " ===============================================================
+imap  <C-^>  <C-X><C-U><C-U><C-P><C-N>
+
 set completeopt=menu,preview,longest
+set pumheight=10
+
 set completefunc=ChineseIME
 let s:datafile=expand("<sfile>:p:h") ."/". "ChineseIME.dict"
 
 function! ChineseIME(start, base)
-  let lines = readfile(s:datafile)
+  let current_line = getline('.')
+  let start_col = col('.')-1
+  let start_char = current_line[start_col-1]
+
   if a:start
-    let line = getline('.')
-    let start = col('.')-1
-    while start > 0 && line[start-1] =~ '\w'
-      let start -= 1
-    endwhile
-    return start
+    if( start_char =~ '\w' )
+       while start_col > 0 && current_line[start_col-1] =~ '\w'
+         let start_col -= 1
+       endwhile
+       return start_col
+    endif
   else
+    let lines = readfile(s:datafile)
     for line in lines
       if line =~ "^" . a:base
         let popupmenu_list = split(line,'\s\+')
@@ -99,5 +107,7 @@ function! ChineseIME(start, base)
     endfor
     return []
   endif
+
 endfunction
+
 
