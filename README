@@ -1,0 +1,14 @@
+This is a mirror of http://www.vim.org/scripts/script.php?script_id=2506
+
+The VimIM is a Vim plugin designed as an independent
+IM (Input Method) to support the input of Chinese at will.
+ 
+VimIM 是专为 vim 玩家开发的插件，可作为 vim 内嵌中文输入法。
+只要您的 vim 能显示中文，您就能用 vim 〖云〗输入中文。
+VimIM 把 vim 的中文编辑潜能，提升到一个全新的高度。
+
+错误报告：http://code.google.com/p/vimim/issues/entry
+民间词库：http://vimim-data.googlecode.com
+自己的云：http://pim-cloud.appspot.com
+最新主页：http://vimim.googlecode.com/svn/vimim/vimim.html
+新闻论坛：http://groups.google.com/group/vimim
