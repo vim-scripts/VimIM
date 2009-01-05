@@ -1,13 +1,13 @@
 " ===============================================================
 "        File:  ChineseIME.vim
 "      Author:  Sean Ma <maxiangjiang_at_gmail.com>
-" Last Change:  January 3, 2009
+" Last Change:  January 4, 2009
 "         URL:  http://vim.sourceforge.net/scripts/script.php?script_id=2506
 " Description:  This is a vim plugin used as an independent built-in
 "               IME (Input Method Editor) to input Chinese using vim
 "               omni completion feature. The input method could be
 "               anything, depending on the data file.
-" Installation: (a) download a sample data file from below link
+" Installation: (a) download a sample data file from link below
 "               (b) save this file and data file in the plugin directory
 "   Data File:  http://maxiangjiang.googlepages.com/ChineseIME.dict
 " Screen Shot:  http://maxiangjiang.googlepages.com/vim_ime.gif
@@ -39,6 +39,10 @@
 "  (7) http://maxiangjiang.googlepages.com/chinese.html
 " ---------------------------------------------------------------
 "  The data file:
+"
+"  Note: The data file has to be sorted before it can be used.
+"        This is for performance consideration.
+"
 "  The basic format of the data file is made of three columns:
 "
 "  +=========+=========+=========+
@@ -66,19 +70,18 @@
 "  (2) The data file can contain comments with any non-word character
 "  (3) The sequence of data file can be adjusted based on frequency
 "  (4) Reference #5 may be used to automatically open the popup menu
-"  (5) specify a filetype to load this plugin as needed
 " ---------------------------------------------------------------
 "  The .vimrc setting preference:
-"  (1) to speed up performance
-"      let g:CacheIMEDataAtStartup=1
-"  (2) map i_<C-^> to pick up the default right away
+"  (1) map i_<C-^> to pick up the default right away
 "      let g:ChineseIMEMappingCtrl6=1
-"  (3) map i_<Tab> to make <Space> "intelligent"
+"  (2) map i_<Tab> to make <Space> "intelligent"
 "      let g:ChineseIMESpaceToggle=1
-"  (4) to limit the maximum height of popup menu
+"  (3) to limit the maximum height of popup menu
 "      setlocal pumheight=10
-"  (5) to make sure 'menu' is added
+"  (4) to make sure 'menu' is added
 "      setlocal completeopt=menu,preview,longest
+"  (5) to avoid screen mess up
+"      setlocal nolazyredraw
 "  (6) to make popup menu less "offensive"
 "      highlight! Pmenu      NONE
 "      highlight! PmenuThumb NONE
@@ -87,15 +90,9 @@
 " ---------------------------------------------------------------
 " Options:
 "
-"   g:CacheIMEDataAtStartup:
-"     add data file in memory at startup
-"     :pro: fast popup menu shown when <key> is matched
-"     :con: slow initial loading when vim is opened
-"     default: 0
-"
 "   g:ChineseIMESpaceToggle:
 "     toggle the use of <Space> to trigger popup menu
-"     i_<C-^> is used to toggle this feature
+"     i_<Tab> is used to toggle this feature
 "     :pro: convenient and consistent like other IMEs
 "     :con: need to get used to <Space> key
 "     default: 0
@@ -118,38 +115,12 @@ set completefunc=ChineseIME
 let s:datafile=expand("<sfile>:p:h") ."/". "ChineseIME.dict"
 let s:lines = readfile(s:datafile)
 
-if !exists("g:CacheIMEDataAtStartup")
-  let g:CacheIMEDataAtStartup = 0
-endif
-
 if !exists("g:ChineseIMESpaceToggle")
     let g:ChineseIMESpaceToggle = 0
 endif
 
 if !exists("g:ChineseIMESpaceToggle")
     let g:ChineseIMEMappingCtrl6 = 0
-endif
-
-
-" ------------------------------------
-" to boost performance: cache the data
-" ------------------------------------
-let s:dict = {}
-if g:CacheIMEDataAtStartup
-  for line in s:lines
-    let values = []
-    let itmes = split(line,'\s\+')
-    let key = get(itmes,0)
-    if key == '0' || key =~ '\W'
-      continue
-    end
-    let value = get(itmes,1)
-    if has_key(s:dict,key)
-      let s:dict[key] = add(s:dict[key], value)
-    else
-      let s:dict[key] = add(values, value)
-    endif
-  endfor
 endif
 
 
@@ -160,45 +131,43 @@ function! ChineseIME(start, base)
   let start_char = current_line[start_col-1]
 
   if a:start
+
+    " to avoid hang on triggering non-word char
     if( start_char =~ '\w' )
        while start_col > 0 && current_line[start_col-1] =~ '\w'
          let start_col -= 1
        endwhile
        return start_col
     endif
+
   else
 
-    if g:CacheIMEDataAtStartup
-      " bingo if exact match is found
-      if has_key(s:dict, a:base)
-        return s:dict[a:base]
-      else
-        " no key found: scan the entire cache for match
-        let fuzzy_keys = []
-        for key in keys(s:dict)
-           if key =~ "^" . a:base
-             call extend(fuzzy_keys, s:dict[key])
-           endif
-        endfor
-        return fuzzy_keys
-      endif
+    " no more cache, no more full range scan
+    " find out the exact range on the sorted data file
+    let start_match = match(s:lines, "^".a:base)
 
-    else
-    " ---------------------------------------------
-    " no cache: scan the entire data file for match
-    " ---------------------------------------------
-      for line in s:lines
-        if line =~ "^" . a:base
-          let popupmenu_list = split(line,'\s\+')
-          let line = get(popupmenu_list,1)
-          call complete_add(line)
-        endif
-      endfor
-      return []
-    endif
+    let counts = 0
+    let next_match = start_match
+    while next_match > 0 
+      let counts += 1
+      let next_match = match(s:lines, "^".a:base, 0, counts)
+    endwhile
+
+    let end_match = start_match + counts -2
+
+    let match_range_list = s:lines[start_match : end_match]
+
+    for line in match_range_list
+       let popupmenu_list = split(line,'\s\+')
+       let line = get(popupmenu_list,1)
+       call complete_add(line)
+    endfor
+
+    return []
 
   endif
 endfunction
+
 
 let s:n = 0
 function! ChineseIMESpaceToggle()
@@ -210,9 +179,11 @@ function! ChineseIMESpaceToggle()
      let s:n += 1
 endfunction
 
+
 if g:ChineseIMESpaceToggle
     imap <buffer><C-I> <C-O>:call ChineseIMESpaceToggle()<CR>
 endif
+
 
 if g:ChineseIMEMappingCtrl6
     imap <buffer><C-^> <C-X><C-U><C-U><C-P><C-N>
