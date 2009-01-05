@@ -1,7 +1,7 @@
 " ===============================================================
 "        File:  ChineseIME.vim
 "      Author:  Sean Ma <maxiangjiang_at_gmail.com>
-" Last Change:  January 4, 2009
+" Last Change:  January 5, 2009
 "         URL:  http://vim.sourceforge.net/scripts/script.php?script_id=2506
 " Description:  This is a vim plugin used as an independent built-in
 "               IME (Input Method Editor) to input Chinese using vim
@@ -37,6 +37,7 @@
 "  (5) http://www.vim.org/scripts/script.php?script_id=1879
 "  (6) http://vim.sourceforge.net/scripts/script.php?script_id=999
 "  (7) http://maxiangjiang.googlepages.com/chinese.html
+"  (8) http://groups.google.com/group/vim_use/topics 
 " ---------------------------------------------------------------
 "  The data file:
 "
@@ -57,7 +58,7 @@
 "  The <apace> can be any whitespace character in any combination
 "  The <value> is what will be input
 "
-"  In principle, any input method (Wubi, Pinyin, Four corner, etc)
+"  In principle, any input method (Wubi, Pinyin, English, etc)
 "  can be used as long as a data file is made available.
 "
 "  A sample data file based on Pinyin can be found from
@@ -65,41 +66,39 @@
 "  It has 30127 lines, which are extracted from
 "  http://maxiangjiang.googlepages.com/ChineseIME.html
 " ---------------------------------------------------------------
-"  Tips:
-"  (1) The data file can also include English as the key
-"  (2) The data file can contain comments with any non-word character
-"  (3) The sequence of data file can be adjusted based on frequency
-"  (4) Reference #5 may be used to automatically open the popup menu
-" ---------------------------------------------------------------
+"
 "  The .vimrc setting preference:
-"  (1) map i_<C-^> to pick up the default right away
-"      let g:ChineseIMEMappingCtrl6=1
-"  (2) map i_<Tab> to make <Space> "intelligent"
-"      let g:ChineseIMESpaceToggle=1
+"
+"  (1) to pick up the default right away  (i_<C-^>)
+"      let g:ChineseIME_Toggle_i_Ctrl6=1
+"  (2) to make input more "intelligent"   (i_<C-\>)
+"      let g:ChineseIME_Toggle_InertMode=1
 "  (3) to limit the maximum height of popup menu
-"      setlocal pumheight=10
+"      set pumheight=10
 "  (4) to make sure 'menu' is added
-"      setlocal completeopt=menu,preview,longest
+"      set completeopt=menu,preview,longest
 "  (5) to avoid screen mess up
-"      setlocal nolazyredraw
+"      set nolazyredraw
 "  (6) to make popup menu less "offensive"
 "      highlight! Pmenu      NONE
 "      highlight! PmenuThumb NONE
+"  (7) [optional, experimental] install "autocomplpop.vim" plugin
+"      to automatically open the popup menu
 " ---------------------------------------------------------------
 
 " ---------------------------------------------------------------
 " Options:
 "
-"   g:ChineseIMESpaceToggle:
-"     toggle punctuation 
-"     toggle the use of <Space> to trigger popup
-"     toggle cursor color to identify the 'IME mode'
-"     Note: i_<Tab> is used to toggle this feature
+"   g:ChineseIME_Toggle_InertMode:
+"     => toggle punctuation 
+"     => toggle the use of <Space> to trigger popup
+"     => toggle cursor color to identify the 'IME mode'
+"     Note: i_<C-\> is used to toggle this feature
 "     :pro: convenient and consistent like other IME
 "     :con: need to get used to <Space> key
 "     default: 0
 "
-"   g:ChineseIMEMappingCtrl6:
+"   g:ChineseIME_Toggle_i_Ctrl6:
 "     define i_<C-^> as <C-X><C-U><C-U><C-P><C-N>
 "     default: 0
 " ---------------------------------------------------------------
@@ -117,12 +116,12 @@ set completefunc=ChineseIME
 let s:datafile=expand("<sfile>:p:h") ."/". "ChineseIME.dict"
 let s:lines = readfile(s:datafile)
 
-if !exists("g:ChineseIMESpaceToggle")
-    let g:ChineseIMESpaceToggle = 0
+if !exists("g:ChineseIME_Toggle_InertMode")
+    let g:ChineseIME_Toggle_InertMode = 0
 endif
 
-if !exists("g:ChineseIMEMappingCtrl6")
-     let g:ChineseIMEMappingCtrl6 = 0
+if !exists("g:ChineseIME_Toggle_i_Ctrl6")
+     let g:ChineseIME_Toggle_i_Ctrl6 = 0
 endif 
 
 function! ChineseIME(start, base)
@@ -171,10 +170,13 @@ endfunction
 
 
 let s:n = 0
-function! ChineseIMESpaceToggle()
+function! ChineseIME_Toggle_InertMode()
      if s:n%2 == 0
+         " -----------------------------------
          highlight Cursor guifg=bg guibg=Green
+         " -----------------------------------
          imap <Space> <C-X><C-U><C-U><C-P><C-N>
+         " -----------------------------------
          imap (  <C-V>uff08
          imap )  <C-V>uff09
          imap ,  <C-V>uff0c
@@ -186,9 +188,8 @@ function! ChineseIMESpaceToggle()
          imap ?  <C-V>uff1f
          imap [  <C-V>u3010
          imap ]  <C-V>u3011
-         imap << <C-V>u300a
-         imap >> <C-V>u300b
          imap \\ <C-V>u3001
+         -------------------------------------
      else
          highlight Cursor guifg=bg guibg=fg
          iunmap <Space>
@@ -203,21 +204,19 @@ function! ChineseIMESpaceToggle()
          iunmap ?
          iunmap [
          iunmap ]
-         iunmap <<
-         iunmap >>
          iunmap \\
      endif
      let s:n += 1
 endfunction
 
 
-if g:ChineseIMESpaceToggle
-    imap <buffer><C-I> <C-O>:call ChineseIMESpaceToggle()<CR>
+if g:ChineseIME_Toggle_InertMode
+    imap <buffer> <C-\>  <C-O>:call ChineseIME_Toggle_InertMode()<CR>
 endif
 
 
-if g:ChineseIMEMappingCtrl6
-    imap <buffer><C-^> <C-X><C-U><C-U><C-P><C-N>
+if g:ChineseIME_Toggle_i_Ctrl6
+    imap <buffer> <C-^>  <C-X><C-U><C-U><C-P><C-N>
 endif
 
 
