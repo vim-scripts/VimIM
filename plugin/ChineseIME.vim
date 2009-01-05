@@ -91,9 +91,11 @@
 " Options:
 "
 "   g:ChineseIMESpaceToggle:
-"     toggle the use of <Space> to trigger popup menu
-"     i_<Tab> is used to toggle this feature
-"     :pro: convenient and consistent like other IMEs
+"     toggle punctuation 
+"     toggle the use of <Space> to trigger popup
+"     toggle cursor color to identify the 'IME mode'
+"     Note: i_<Tab> is used to toggle this feature
+"     :pro: convenient and consistent like other IME
 "     :con: need to get used to <Space> key
 "     default: 0
 "
@@ -119,10 +121,9 @@ if !exists("g:ChineseIMESpaceToggle")
     let g:ChineseIMESpaceToggle = 0
 endif
 
-if !exists("g:ChineseIMESpaceToggle")
-    let g:ChineseIMEMappingCtrl6 = 0
-endif
-
+if !exists("g:ChineseIMEMappingCtrl6")
+     let g:ChineseIMEMappingCtrl6 = 0
+endif 
 
 function! ChineseIME(start, base)
 
@@ -148,7 +149,7 @@ function! ChineseIME(start, base)
 
     let counts = 0
     let next_match = start_match
-    while next_match > 0 
+    while next_match > 0
       let counts += 1
       let next_match = match(s:lines, "^".a:base, 0, counts)
     endwhile
@@ -172,9 +173,39 @@ endfunction
 let s:n = 0
 function! ChineseIMESpaceToggle()
      if s:n%2 == 0
+         highlight Cursor guifg=bg guibg=Green
          imap <Space> <C-X><C-U><C-U><C-P><C-N>
+         imap (  <C-V>uff08
+         imap )  <C-V>uff09
+         imap ,  <C-V>uff0c
+         imap .  <C-V>u3002
+         imap :  <C-V>uff1a
+         imap ;  <C-V>uff1b
+         imap <  <C-V>u3008
+         imap >  <C-V>u3009
+         imap ?  <C-V>uff1f
+         imap [  <C-V>u3010
+         imap ]  <C-V>u3011
+         imap << <C-V>u300a
+         imap >> <C-V>u300b
+         imap \\ <C-V>u3001
      else
+         highlight Cursor guifg=bg guibg=fg
          iunmap <Space>
+         iunmap (
+         iunmap )
+         iunmap ,
+         iunmap .
+         iunmap :
+         iunmap ;
+         iunmap <
+         iunmap >
+         iunmap ?
+         iunmap [
+         iunmap ]
+         iunmap <<
+         iunmap >>
+         iunmap \\
      endif
      let s:n += 1
 endfunction
