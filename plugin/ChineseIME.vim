@@ -1,7 +1,7 @@
 " ===============================================================
 "        File:  ChineseIME.vim
 "      Author:  Sean Ma <maxiangjiang_at_gmail.com>
-" Last Change:  January 5, 2009
+" Last Change:  January 6, 2009
 "         URL:  http://vim.sourceforge.net/scripts/script.php?script_id=2506
 " Description:  This is a vim plugin used as an independent built-in
 "               IME (Input Method Editor) to input Chinese using vim
@@ -107,10 +107,6 @@ if exists("loaded_ChineseIME")
 endif
 let loaded_ChineseIME = 1
 
-set completefunc=ChineseIME
-let s:datafile=expand("<sfile>:p:h") ."/". "ChineseIME.dict"
-let s:lines = readfile(s:datafile)
-
 if !exists("g:ChineseIME_Toggle_InertMode")
     let g:ChineseIME_Toggle_InertMode = 0
 endif
@@ -118,6 +114,12 @@ endif
 if !exists("g:ChineseIME_Toggle_i_Ctrl6")
      let g:ChineseIME_Toggle_i_Ctrl6 = 0
 endif
+
+
+let s:datafile=expand("<sfile>:p:h") ."/". "ChineseIME.dict"
+let s:lines = readfile(s:datafile)
+
+set completefunc=ChineseIME
 
 function! ChineseIME(start, base)
 
@@ -139,20 +141,31 @@ function! ChineseIME(start, base)
 
     " no more cache, no more full range scan
     " find out the exact range on the sorted data file
-    let start_match = match(s:lines, "^".a:base)
-
+    " ------------------------------------------------
     let counts = 0
+    let pat = "^" . a:base
+    let start_match = match(s:lines, pat)
     let next_match = start_match
-    while next_match > 0
+
+    " to limit search where short characters are typed
+    " the default setting is hard-coded to be 2
+    " for example, a<C-^> only shows maps for a only, not 'aiqing'
+    " ------------------------------------------------
+    if len(a:base) <= 2
+      let pat = "^" . a:base . "\\> "
+    endif
+
+    while next_match >= 0
       let counts += 1
-      let next_match = match(s:lines, "^".a:base, 0, counts)
+      let next_match = match(s:lines, pat, start_match, counts)
     endwhile
 
-    let end_match = start_match + counts -2
+    " now simply store and show the list one by one
+    " ------------------------------------------------
+    let end_match = start_match + counts - 2
+    let matched_range_list = s:lines[start_match : end_match]
 
-    let match_range_list = s:lines[start_match : end_match]
-
-    for line in match_range_list
+    for line in matched_range_list
        let popupmenu_list = split(line,'\s\+')
        let last_value = get(popupmenu_list,-1)
        call complete_add(last_value)
