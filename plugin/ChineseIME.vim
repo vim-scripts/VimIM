@@ -25,9 +25,9 @@
 "  (1) Chinese can be read from within vim
 "  (2) The utf-8 format is used both in memory and on disk
 "  (3) The .vimrc is correctly set, for example, on my W2K box:
-"      set enc=utf8
-"      set gfn=Courier_New:h12:w7
-"      set gfw=SimSun-18030,Arial_Unicode_MS
+"      set enc = utf8
+"      set gfn = Courier_New:h12:w7
+"      set gfw = SimSun-18030,Arial_Unicode_MS
 " ---------------------------------------------------------------
 "  References:
 "  (1) http://en.wikipedia.org/wiki/Input_method_editor
@@ -37,7 +37,7 @@
 "  (5) http://www.vim.org/scripts/script.php?script_id=1879
 "  (6) http://vim.sourceforge.net/scripts/script.php?script_id=999
 "  (7) http://maxiangjiang.googlepages.com/chinese.html
-"  (8) http://groups.google.com/group/vim_use/topics 
+"  (8) http://groups.google.com/group/vim_use/topics
 " ---------------------------------------------------------------
 "  The data file:
 "
@@ -46,17 +46,17 @@
 "
 "  The basic format of the data file is made of three columns:
 "
-"  +=========+=========+=========+
-"  |column A |column B |column C |
-"  +---------+---------+---------+
-"  |  <key>  | <space> | <value> |
-"  +=========+=========+=========+
-"  |   ma    |         |    馬   |
-"  +=========+=========+=========+
+"  +=========|==============================|=========+
+"  |column A |          column B            |column C |
+"  +---------|------------------------------|---------+
+"  |  <key>  | <space>   comments   <space> | <value> |
+"  +=========|==============================|=========+
+"  |   ma    |          (optional)          |    馬   |
+"  +=========|==============================|=========+
 "
 "  The <key> is what is typed in alphabet, ready to be replaced.
-"  The <apace> can be any whitespace character in any combination
-"  The <value> is what will be input
+"  The middle column can add additional comments                 
+"  The <value> is in the last column, which is what will be input
 "
 "  In principle, any input method (Wubi, Pinyin, English, etc)
 "  can be used as long as a data file is made available.
@@ -73,16 +73,10 @@
 "      let g:ChineseIME_Toggle_i_Ctrl6=1
 "  (2) to make input more "intelligent"   (i_<C-\>)
 "      let g:ChineseIME_Toggle_InertMode=1
-"  (3) to limit the maximum height of popup menu
-"      set pumheight=10
-"  (4) to make sure 'menu' is added
-"      set completeopt=menu,preview,longest
-"  (5) to avoid screen mess up
-"      set nolazyredraw
-"  (6) to make popup menu less "offensive"
+"  (3) to make popup menu less "offensive"
 "      highlight! Pmenu      NONE
 "      highlight! PmenuThumb NONE
-"  (7) [optional, experimental] install "autocomplpop.vim" plugin
+"  (4) [optional, experimental] install "autocomplpop.vim" plugin
 "      to automatically open the popup menu
 " ---------------------------------------------------------------
 
@@ -90,17 +84,18 @@
 " Options:
 "
 "   g:ChineseIME_Toggle_InertMode:
-"     => toggle punctuation 
+"     => toggle punctuation
 "     => toggle the use of <Space> to trigger popup
 "     => toggle cursor color to identify the 'IME mode'
+"     => toggle options 'pumheight', 'completeopt', 'lazyredraw'
 "     Note: i_<C-\> is used to toggle this feature
-"     :pro: convenient and consistent like other IME
-"     :con: need to get used to <Space> key
-"     default: 0
+"           :pro: convenient and consistent like other IME
+"           :con: need to get used to <Space> key
+"           default: 0
 "
 "   g:ChineseIME_Toggle_i_Ctrl6:
 "     define i_<C-^> as <C-X><C-U><C-U><C-P><C-N>
-"     default: 0
+"     Note: default: 0
 " ---------------------------------------------------------------
 
 
@@ -122,7 +117,7 @@ endif
 
 if !exists("g:ChineseIME_Toggle_i_Ctrl6")
      let g:ChineseIME_Toggle_i_Ctrl6 = 0
-endif 
+endif
 
 function! ChineseIME(start, base)
 
@@ -159,8 +154,8 @@ function! ChineseIME(start, base)
 
     for line in match_range_list
        let popupmenu_list = split(line,'\s\+')
-       let line = get(popupmenu_list,1)
-       call complete_add(line)
+       let last_value = get(popupmenu_list,-1)
+       call complete_add(last_value)
     endfor
 
     return []
@@ -172,11 +167,18 @@ endfunction
 let s:n = 0
 function! ChineseIME_Toggle_InertMode()
      if s:n%2 == 0
-         " -----------------------------------
+         " -----------------------------------  options
+         let s:saved_pumheight=&pumheight
+         let s:saved_completeopt=&completeopt
+         let s:saved_lazyredraw=&lazyredraw
+         set pumheight=10
+         set completeopt=menu,preview,longest
+         set nolazyredraw
+         " -----------------------------------  cursor highlight
          highlight Cursor guifg=bg guibg=Green
-         " -----------------------------------
+         " -----------------------------------  <Space>
          imap <Space> <C-X><C-U><C-U><C-P><C-N>
-         " -----------------------------------
+         " -----------------------------------  punctuation
          imap (  <C-V>uff08
          imap )  <C-V>uff09
          imap ,  <C-V>uff0c
@@ -189,10 +191,17 @@ function! ChineseIME_Toggle_InertMode()
          imap [  <C-V>u3010
          imap ]  <C-V>u3011
          imap \\ <C-V>u3001
-         -------------------------------------
+         " -----------------------------------
      else
+         " -----------------------------------  options
+         let &pumheight=s:saved_pumheight
+         let &completeopt=s:saved_completeopt
+         let &lazyredraw=s:saved_lazyredraw
+         " -----------------------------------  cursor highlight
          highlight Cursor guifg=bg guibg=fg
+         " -----------------------------------  <Space>
          iunmap <Space>
+         " -----------------------------------  punctuation
          iunmap (
          iunmap )
          iunmap ,
@@ -205,6 +214,7 @@ function! ChineseIME_Toggle_InertMode()
          iunmap [
          iunmap ]
          iunmap \\
+         " -----------------------------------
      endif
      let s:n += 1
 endfunction
@@ -218,5 +228,4 @@ endif
 if g:ChineseIME_Toggle_i_Ctrl6
     imap <buffer> <C-^>  <C-X><C-U><C-U><C-P><C-N>
 endif
-
 
