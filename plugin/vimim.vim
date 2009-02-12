@@ -1,23 +1,24 @@
 ﻿" =================================================
-"              vimim —— vim 中文输入法
+"              VimIM —— Vim 中文输入法
 " -------------------------------------------------
-" vimim -- input method by vim, of vim, for vimmers
+" VimIM -- Input Method by Vim, of Vim, for Vimmers
 " =================================================
-" == The vimim Introduction == {{{
-" -------------------------------------------------
+
+" == The VimIM Introduction == {{{
+" ================================
 "        File: vimim.vim
 "      Author: Sean Ma <maxiangjiang_at_cornell_dot_edu>
-" Last Change: 20090207T150348
+" Last Change: 20090211T194617
 "         URL: http://vim.sourceforge.net/scripts/script.php?script_id=2506
 " -----------------------------------------------------------
-" Description: This is a vim plugin designed as an independent
-"              IM (Input Method) using vim omni completion feature.
-"              It can be used as another way for vim to input non-ascii
+" Description: The VimIM is a Vim plugin designed as an independent
+"              IM (Input Method) to support the input of any language.
+"              It can be used as yet another way to input non-ascii
 "              using CTRL-^ in addition to builtin CTRL-V and CTRL-K.
 " -----------------------------------------------------------
 "    Features: * CJK can be input if it can be read within vim.
 "              * It is independent of the Operating System.
-"              * It is independent of vim 'mbyte-XIM/mbyte-IME' API.
+"              * It is independent of Vim 'mbyte-XIM/mbyte-IME' API.
 "              * The input methods can be freely defined.
 "              * The datafile format is open, simple and flexible.
 "              * The One Key speeds up ad hoc Chinese input.
@@ -25,11 +26,12 @@
 "              * Support 'fuzzy search' and 'wildcards search'
 "              * Support 'auto spell' and 'fuzzy pinyin'
 " -----------------------------------------------------------
-" Installation (1) download any data file you like from the link below
-"              (2) drop this file and the datafile to the plugin directory
 " Easter Eggs: (0) (no datafile; no configuration)
 "              (1) (source this script:)    :so%<CR>
 "              (2) (in Insert mode, type:)  vim<C-X><C-U>
+" -----------------------------------------------------------
+" Installation (1) download any data file you like from the link below
+"              (2) drop this file and the datafile to the plugin directory
 " -----------------------------------------------------------
 "   Data File: http://maxiangjiang.googlepages.com/vimim.pinyin
 "              http://maxiangjiang.googlepages.com/vimim.wubi
@@ -38,54 +40,61 @@
 "              http://maxiangjiang.googlepages.com/vimim.quick
 "              http://maxiangjiang.googlepages.com/vimim.4corner
 " -----------------------------------------------------------
+"    Usage(1): In Insert Mode, in normal English environement:
+"              # type <C-^> to input Chinese, using VimIM One Key
+"    Usage(2): In Insert Mode, to input Chinese continously
+"              # type <C-\> to toggle to VimIM Chinese Input Mode
+"              # Chinese will be shown as long as you type
+" -----------------------------------------------------------
 " Screen Shot: http://maxiangjiang.googlepages.com/vimim.gif
 " Latest Code: http://maxiangjiang.googlepages.com/vimim.vim
 "   HTML Code: http://maxiangjiang.googlepages.com/vimim.vim.html
 " Chinese URL: http://maxiangjiang.googlepages.com/vimim.html
-" Google Code: http://code.google.com/p/vimim
 "  News Group: http://groups.google.com/group/vimim
 " ----------------------------------------------------------- }}}
 
-" == The vimim Backgrounds == {{{
+" == The VimIM Instruction == {{{
 " ===============================
 
-" Example vimrc setting for displaying Chinese:
-" ---------------------------------------------
+" The VimIM Design Goals:
+" -----------------------
+" + Chinese can be input using Vim regardless of encoding
+" + Without negative impact to Vim if VimIM is not used
+" + No comprise for high speed and low memory usage
+" + Most VimIM options are enabled by default
+" + All VimIM options can be explicitly disabled at will
+
+" To get started: sample .vimrc for displaying Chinese:
+" -----------------------------------------------------
 " set gfn=Courier_New:h12:w7,Arial_Unicode_MS
 " set gfw=NSimSun-18030,NSimSun ambiwidth=double
 " set enc=utf8 fencs=ucs-bom,utf8,chinese,taiwan,ansi
 
-" The available vimim Options:
+" The available VimIM Options:
 " ----------------------------
-" + Chinese can be input using vim regardless of encoding
-" + Without any negative impact to vim if vimim is not used
-" + No comprise for high speed and low memory usage
-" + Most common options are enabled by default
-" + All options can be explicitly disabled by adding option.
-
-" The vimim OneKey Input
+" The VimIM OneKey Input
 "   - use OneKey to pick up the default
 "   - use OneKey again to perform cycle navigation
-"   - use OneKey again to search vim Dictionary
+"   - use OneKey again to search Vim Dictionary
 "   - The default key is i_<C-^>
 " # :let g:vimim_disable_one_key=1 to disable
 "
-" The vimim Smart Chinese Input Mode
+" The VimIM Smart Chinese Input Mode
 "   - show dynamic menu as you type
 "   - trigger the popup menu using Smart <Space>
-"   - toggle vimim Insert Mode automatically
+"   - toggle VimIM Insert Mode automatically
 "   - toggle English and Chinese punctuation
 "   The default key is i_<C-\>
 " # :let g:vimim_disable_smart_space=1 to disable.
 "
-" The vimim Quick English Input
+" The VimIM Quick English Input
 "   - quick English input within Chinese input mode
 "     (1) EGNLISH  ==> ENGLISH
 "     (2) Vitamin  ==> vitamin
 "     (3) JJanuary ==> January
 " # :let g:vimim_disable_quick_english_input=1 to disable.
 "
-" To disable vimim "Default On" Options:
+" To disable VimIM "Default On" Options:
 " # let g:vimim_disable_auto_spell=1
 " # let g:vimim_disable_fuzzy_search=1
 " # let g:vimim_disable_fuzzy_pinyin=1
@@ -97,12 +106,13 @@
 " # let g:vimim_disable_chinese_punctuation=1
 " # let g:vimim_disable_direct_unicode_input=1
 "
-" To enable vimim "Default Off" Options:
+" To enable VimIM "Default Off" Options:
 " # let g:vimim_enable_pinyin_tone_input=1
 " # let g:vimim_enable_label_navigation=1
 " # let g:vimim_datafile2="filename"
+" # let g:vimim_enable_signature="signature"
 
-" The vimim Data File:
+" The VimIM Data File:
 " --------------------
 " The data file has to be sorted (:sort) before it can be used.
 " The basic format of the data file is simple and flexible:
@@ -119,7 +129,7 @@
 "
 " Following sample data files are provided:
 " -------------- -------------------------
-"   vimim.vim         vimim data file
+"   vimim.vim         VimIM data file
 " -------------- -------------------------
 "  vimim.pinyin   input method for PinYin
 "  vimim.wubi     input method for WuBi
@@ -133,8 +143,8 @@
 " includes 'chinese', it is assumed to be encoded in 'chinese'.
 " ============================================================= }}}
 
-" == The vimim Core == {{{
-" ========================
+" == The VimIM Core Engine == {{{
+" ===============================
 
 if exists("b:loaded_vimim")||&cp||v:version<701
     finish
@@ -143,9 +153,9 @@ let b:loaded_vimim=1
 
 scriptencoding utf-8
 set completefunc=b:VimIM
-" ----------------------------
-function! b:VimIM(start, base)
-" ----------------------------
+" --------------------------------
+function! b:VimIM(start, keyboard)
+" --------------------------------
 sil!call s:VimIM_Load_Datafile()
 
 if a:start
@@ -156,7 +166,7 @@ if a:start
 
     " define valid characters for <key> in datafile
     " ---------------------------------------------
-    let char_valid = "[*.0-9A-Za-z']"
+    let char_valid = "[*.0-9A-Za-z]"
     if g:vimim_disable_number_in_key
         let char_valid = "[A-Za-z]"
     endif
@@ -182,7 +192,7 @@ if a:start
 
 else
 
-    let abase = a:base
+    let keyboard = a:keyboard
 
     " more easter eggs
     " -----------------------------------------------
@@ -190,52 +200,66 @@ else
     " *now    -> Sunday AM 8 hour 8 minute 8 second
     " *casino -> congratulations! US$88000
     " -----------------------------------------------
-    if abase =~ '^*' && abase !~ '^\d\+\s\+'
+    if keyboard =~ '^*' && keyboard !~ '^\d\+\s\+'
         let chinese=copy(s:translators)
         let chinese.dict=s:ecdict
-        if abase ==# '*casino'
+        if keyboard ==# '*casino'
             let casino = matchstr(localtime(),'..$')*1000
             let casino = 'casino US$'.casino
             let casino = chinese.translate(casino)
             return [casino]
-        elseif abase ==# '*girls'
+        elseif keyboard ==# '*girls'
             return [chinese.translate('grass')]
-        elseif abase ==# '*today' || abase ==# '*now'
-            if abase ==# '*today'
+        elseif keyboard ==# '*today' || keyboard ==# '*now'
+            if keyboard ==# '*today'
                 let today = strftime("%Y year %B %d day %A")
                 let today = chinese.translate(today)
                 return [today]
-            elseif abase ==# '*now'
+            elseif keyboard ==# '*now'
                 let now = strftime("%A %p %I hour %M minute %S second")
                 let now = chinese.translate(now)
                 return [now]
             endif
-        elseif abase ==# '*author' && &encoding == "utf-8"
+        elseif keyboard ==# '*author' && &encoding == "utf-8"
             let mxj = nr2char(39340).nr2char(28248).nr2char(27743)
             let mxj = chinese.translate(mxj)
             let url = "http://maxiangjiang.googlepages.com/index.html"
             let author = mxj . " " . url
             return [author]
-        elseif abase =~ '*\a\+'
-            return ['*casino']
+        elseif keyboard =~ '*\d\+'
+            let number = join(split(strpart(keyboard,1),'\ze'),' ')
+            let number = chinese.translate(number)
+            let number = join(split(number),'')
+            return [number]
+        elseif keyboard =~ '*help'
+            let help = "http://maxiangjiang.googlepages.com/vimim.html"
+            return [help]
+        elseif keyboard =~ '*sign' && len(g:vimim_enable_signature)>1
+            let sign = g:vimim_enable_signature
+            return [sign]
+        elseif keyboard =~ '*todo' && len(g:vimim_enable_todo_list)>1
+            let todo = string(g:vimim_enable_todo_list)
+            return [todo]
+        else
+            return
         endif
     endif
 
     " support direct unicode input: 39340  as in HTML &#39340;
     " --------------------------------------------------------
     if g:vimim_disable_direct_unicode_input==0
-        if abase =~ '\d\d\d\d\d' && &encoding == "utf-8"
-            if abase > 19968 && abase < 40870
-                let unicode = nr2char(abase)
+        if keyboard =~ '\d\d\d\d\d' && &encoding == "utf-8"
+            if keyboard > 19968 && keyboard < 40870
+                let unicode = nr2char(keyboard)
                 return [unicode]
             endif
         endif
     endif
 
-    " hunt vimim easter eggs ... vim<C-^>
+    " hunt VimIM easter eggs ... vim<C-^>
     " -----------------------------------
     if s:vimim_easter_eggs
-        if abase !~# "vim"
+        if keyboard !~# "vim"
             return
         endif
     endif
@@ -248,41 +272,40 @@ else
 
     " avoid hanging on empty or non-word
     " ----------------------------------
-    if strlen(abase) < 1
+    if strlen(keyboard) < 1
         return
     endif
 
     " avoid hanging on pattern with backslash
     " ---------------------------------------
-    if abase =~ '\'
+    if keyboard =~ '\'
         return
     endif
 
     " avoid hanging on square bracket
     " -------------------------------
-    if abase =~ '[' && abase =~ ']'
+    if keyboard =~ '[' && keyboard =~ ']'
         return
     endif
 
     " avoid hanging on leading multiple wildcards
     " -------------------------------------------
-    if abase =~ '^[.*]\+'
+    if keyboard =~ '^[.*]\+'
         return
     endif
 
-    " quick English input
+    " inventive quick English input
     " ---------------------------------
     if g:vimim_disable_quick_english_input==0
-        if abase =~ '^\D'
-            if abase ==# toupper(abase)
+        if keyboard =~ '^\D'
+            if keyboard ==# toupper(keyboard)
                 return
             endif
-            if abase =~# '^\L'
-                let s:use_vim_dictionary=1
-                let english = tolower(abase)
-                if strpart(abase,0,1) =~? strpart(abase,1,1)
-                    let english  = strpart(abase,0,1)
-                    let english .= tolower(strpart(abase,2))
+            if keyboard =~# '^\L'
+                let english = tolower(keyboard)
+                if strpart(keyboard,0,1) =~? strpart(keyboard,1,1)
+                    let english  = strpart(keyboard,0,1)
+                    let english .= tolower(strpart(keyboard,2))
                 endif
                 if s:enable_dynamic_menu
                     let english .= " "
@@ -297,10 +320,10 @@ else
     if g:vimim_disable_wildcard_search==0
         " wildcard search is explicit fuzzy search
         " ----------------------------------------
-        let wildcard = match(abase, '[.*]')
-        if wildcard > 0 && len(abase) > 2
+        let wildcard = match(keyboard, '[.*]')
+        if wildcard > 0 && len(keyboard) > 2
             let do_wildcard_search = 1
-            let abase_head = strpart(abase, 0, wildcard)
+            let keyboard_head = strpart(keyboard, 0, wildcard)
         endif
     endif
 
@@ -308,7 +331,7 @@ else
     " (1) assuming exact 4 digits as the key
     " (2) no wildcard allowed for key with leading zero
     " -------------------------------------------------
-    let pattern = abase
+    let pattern = keyboard
     let four_corner = 0
     if wildcard < 0
         if pattern =~ '^\d\+\s\+'
@@ -332,9 +355,9 @@ else
         let vimim_quick_key_max = 0
     endif
     if wildcard < 0
-        if strlen(a:base)<vimim_quick_key_max
+        if strlen(a:keyboard)<vimim_quick_key_max
             let do_quick_key_search = 1
-        elseif strlen(a:base) == vimim_quick_key_max
+        elseif strlen(a:keyboard) == vimim_quick_key_max
             let space_match = match(b:lines, pattern_word)
             if  space_match > 0
                 let do_quick_key_search = 1
@@ -342,7 +365,7 @@ else
                 let do_fuzzy_search = 1
             endif
         else
-            if strlen(a:base) < s:fuzzy_search_key_length_max
+            if strlen(a:keyboard) < s:fuzzy_search_key_length_max
             \ && g:vimim_disable_fuzzy_search==0
                 let do_fuzzy_search = 1
             endif
@@ -358,7 +381,7 @@ else
         let do_fuzzy_search = 0
         let do_fuzzy_pinyin = 0
         let do_quick_key_search = 0
-        if strlen(a:base) < 1
+        if strlen(a:keyboard) < 1
             return
         endif
     endif
@@ -418,7 +441,7 @@ else
     " put a limit to the search
     " -----------------------------
     let match_max_end = match_start
-    let match_first_char = strpart(abase,0,1)
+    let match_first_char = strpart(keyboard,0,1)
     let match_next_char = nr2char(char2nr(match_first_char)+1)
     if match_first_char == '9'
         let match_next_char = 'a'
@@ -451,8 +474,8 @@ else
         let rules['in']  = 'ing'
         for key in keys(rules)
             let new_key = rules[key]
-            if abase =~ key
-                let pattern = substitute(abase, key, new_key, '')
+            if keyboard =~ key
+                let pattern = substitute(keyboard, key, new_key, '')
                 break
             endif
         endfor
@@ -468,26 +491,26 @@ else
     " do fuzzy search using implicit wildcard
     " do explicit wildcard search
     " ---------------------------------------- fuzzy_match
-    let fuzzy = '^' . abase
+    let fuzzy = '^' . keyboard
     let fuzzy_start = 0
     if (match_start<0 && do_fuzzy_search>0) || do_wildcard_search>0
-        let fuzzy_split = abase
+        let fuzzy_split = keyboard
         let fuzzy_match_start = '^'
         let fuzzy_match_end = '.*'
-        let capital = match(abase,'\L')
+        let capital = match(keyboard,'\L')
         " "cjHui" -> chunjiewanhui ("H" marks word end)
         " ----------------------------------------------
         if capital > 0
-            let abase_first_part = strpart(abase, 0, capital)
-            let abase_last_part = strpart(abase, capital)
-            let fuzzy_split = abase_first_part
-            let abase_last_part = tolower(abase_last_part)
-            let fuzzy_match_end .= abase_last_part . '\s\+'
+            let keyboard_first_part = strpart(keyboard, 0, capital)
+            let keyboard_last_part = strpart(keyboard, capital)
+            let fuzzy_split = keyboard_first_part
+            let keyboard_last_part = tolower(keyboard_last_part)
+            let fuzzy_match_end .= keyboard_last_part . '\s\+'
         endif
         " ----------------------------------------------
-        let fuzzies = abase
+        let fuzzies = keyboard
         if wildcard > 0
-            let fuzzies = substitute(abase,'[*]','.*','g')
+            let fuzzies = substitute(keyboard,'[*]','.*','g')
             let fuzzy_match_end = '\>'
         else
             let fuzzies = join(split(fuzzy_split,'\ze'),'.*')
@@ -575,7 +598,10 @@ else
     " ============ ================= ====
 
     let label = s:menu_label_start_number
+    let menu = keyboard
+    let word = keyboard
     let popupmenu_list = []
+
     for line in matched_list
 
         if len(line) < 1
@@ -612,13 +638,18 @@ else
         endfor
 
     endfor
+
+    if len(g:keyboards) < 24
+        let g:keyboards[menu] = word
+    endif
+
     return popupmenu_list
 endif
 endfunction
 " ====================== }}}
 
-" == The vimim Helper == {{{
-" ==========================
+" == The VimIM Core FrontEnd == {{{
+" =================================
 
 " ----------------------------
 function! s:VimIM_Initialize()
@@ -631,13 +662,14 @@ function! s:VimIM_Initialize()
     call add(globals, "g:vimim_enable_menu_order_by_usage")
     call add(globals, "g:vimim_enable_pumheight")
     call add(globals, "g:vimim_enable_pinyin_tone_input")
+    call add(globals, "g:vimim_enable_signature")
+    call add(globals, "g:vimim_enable_todo_list")
     " ------------------------------------------------------
     call add(globals, "g:vimim_disable_direct_unicode_input")
     call add(globals, "g:vimim_disable_fuzzy_pinyin")
     call add(globals, "g:vimim_disable_wildcard_search")
     call add(globals, "g:vimim_disable_fuzzy_search")
     call add(globals, "g:vimim_disable_auto_spell")
-    call add(globals, "g:vimim_disable_quick_english_input")
     call add(globals, "g:vimim_disable_smart_space")
     call add(globals, "g:vimim_disable_smart_space_autocmd")
     call add(globals, "g:vimim_disable_one_key")
@@ -647,6 +679,7 @@ function! s:VimIM_Initialize()
     call add(globals, "g:vimim_disable_popup_label")
     call add(globals, "g:vimim_disable_number_in_key")
     call add(globals, "g:vimim_disable_dynamic_menu")
+    call add(globals, "g:vimim_disable_quick_english_input")
     call add(globals, "g:vimim_disable_quick_key")
     " ------------------------------------------------------
     for variable in globals
@@ -681,9 +714,9 @@ function! s:VimIM_Initialize()
     let s:vimim_datafile_loaded=0
     let s:vimim_raw_data_loaded=0
     let s:vimim_easter_eggs=0
-    let s:use_vim_dictionary=0
     let s:punctuation_key = []
     let s:punctuation_value = []
+    let g:keyboards = {}
     let msg='User defined completion (^U^N^P) pattern not found'
     " ------------------------------------------------------
 endfunction
@@ -709,7 +742,7 @@ function! s:VimIM_Load_Datafile()
     if filereadable(datafile)
         let s:lines = readfile(datafile)
     else
-        let files = ["vimim.txt"]
+        let files =    ["vimim.txt"]
         call add(files, "vimim.pinyin")
         call add(files, "vimim.wubi")
         call add(files, "vimim.cangjie")
@@ -784,7 +817,7 @@ endfunction
 function! b:VimIM_Label(n)
 " ------------------------
     if pumvisible()
-        let counts = repeat("\<C-N>", a:n)
+        let counts = repeat("\<C-N>",a:n-s:menu_label_start_number)
         let end = '\<C-Y>"'
         if g:vimim_enable_label_navigation
             let end = '"'
@@ -799,17 +832,11 @@ endfunction
 function! b:VimIM_OneKey()
 " ------------------------
     if pumvisible()
-        let s:use_vim_dictionary=0
         sil!return "\<C-N>"
     else
         set completeopt=menu,preview
         let s:menu_label_start_number=0
-        if s:use_vim_dictionary
-            let s:use_vim_dictionary=0
-            sil!return "\<C-X>\<C-N>\<C-N>"
-        else
-            sil!return "\<C-X>\<C-U>\<C-U>\<C-P>"
-        endif
+        sil!return "\<C-X>\<C-U>\<C-U>\<C-P>"
     endif
 endfunction
 
@@ -855,9 +882,8 @@ function! s:VimIM_Setting_On()
     let b:saved_lazyredraw=&lazyredraw
     let b:saved_iminsert=&iminsert
     let b:saved_pumheight=&pumheight
-    " ----------------------------
     let s:_cpo = &cpo
-    let s:menu_label_start_number=1-1
+    let s:menu_label_start_number=1
     if g:vimim_enable_pumheight==0
         let g:vimim_enable_pumheight=10
     endif
@@ -1044,6 +1070,16 @@ function! s:VimIM_Load_Raw_Data()
     let ecdict['Friday']='星期五'
     let ecdict['Saturday']='星期六'
     let ecdict['Sunday']='星期日'
+    let ecdict['0']='○'
+    let ecdict['1']='一'
+    let ecdict['2']='二'
+    let ecdict['3']='三'
+    let ecdict['4']='四'
+    let ecdict['5']='五'
+    let ecdict['6']='六'
+    let ecdict['7']='七'
+    let ecdict['8']='八'
+    let ecdict['9']='九'
     let s:ecdict = ecdict
     " --------------------------------
     let s:easter_eggs = ["vi 文本编辑器"]
@@ -1062,8 +1098,8 @@ endfunction
 
 " ======================= }}}
 
-" == The vimim Mapping == {{{
-" ===========================
+" == The VimIM Core Mapping == {{{
+" ================================
 
 if !exists("s:vimim_initialize")
 " ------------------------------
@@ -1092,8 +1128,4 @@ endif
 " ----------
 " http://groups.google.com/group/vim_use/topics
 " http://www.newsmth.net/bbsdoc.php?board=VIM
-" http://hi.baidu.com/maxiangjiang
-" http://maxiangjiang.spaces.live.com
-" http://360.yahoo.com/maxiangjiang
-" http://vimim.blogspot.com/
-
+" http://maxiangjiang.googlepages.com/vimim.html
