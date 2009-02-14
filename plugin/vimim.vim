@@ -1,14 +1,15 @@
 ﻿" =================================================
-"              VimIM —— Vim 中文输入法
+"             "VimIM —— Vim 中文输入法"
 " -------------------------------------------------
 " VimIM -- Input Method by Vim, of Vim, for Vimmers
 " =================================================
 
-" == The VimIM Introduction == {{{
-" ================================
+" == "The VimIM Introduction" == {{{
+" ==================================
 "        File: vimim.vim
-"      Author: Sean Ma <maxiangjiang_at_cornell_dot_edu>
-" Last Change: 20090211T194617
+"      Author: Sean Ma
+"     License: GNU Lesser General Public License 
+" Last Change: 20090214T011605
 "         URL: http://vim.sourceforge.net/scripts/script.php?script_id=2506
 " -----------------------------------------------------------
 " Description: The VimIM is a Vim plugin designed as an independent
@@ -25,13 +26,14 @@
 "              * The Smart CJK Input Mode makes CJK input comfortable
 "              * Support 'fuzzy search' and 'wildcards search'
 "              * Support 'auto spell' and 'fuzzy pinyin'
+"              * Come up with a dummy English to Chinese Translator
 " -----------------------------------------------------------
-" Easter Eggs: (0) (no datafile; no configuration)
-"              (1) (source this script:)    :so%<CR>
-"              (2) (in Insert mode, type:)  vim<C-X><C-U>
+"  Easter Eggs: (1) (No datafile; No configuration)
+"               (2) (source this script:)    :so%<CR>
+"               (3) (in Insert mode, type:)  vim<C-X><C-U>
 " -----------------------------------------------------------
-" Installation (1) download any data file you like from the link below
-"              (2) drop this file and the datafile to the plugin directory
+" Installation: (1) download any data file you like from the link below
+"               (2) drop this file and the datafile to the plugin directory
 " -----------------------------------------------------------
 "   Data File: http://maxiangjiang.googlepages.com/vimim.pinyin
 "              http://maxiangjiang.googlepages.com/vimim.wubi
@@ -40,11 +42,11 @@
 "              http://maxiangjiang.googlepages.com/vimim.quick
 "              http://maxiangjiang.googlepages.com/vimim.4corner
 " -----------------------------------------------------------
-"    Usage(1): In Insert Mode, in normal English environement:
-"              # type <C-^> to input Chinese, using VimIM One Key
-"    Usage(2): In Insert Mode, to input Chinese continously
-"              # type <C-\> to toggle to VimIM Chinese Input Mode
-"              # Chinese will be shown as long as you type
+"    Usage A:  in Insert Mode, from normal English environement
+"              # type i_CTRL-^ to input Chinese, using VimIM One Key
+"    Usage B:  in Insert Mode, to type Chinese continously
+"              # type i_CTRL-\ to toggle to VimIM Chinese Input Mode
+"              # Chinese will be shown on the popup menu as you type
 " -----------------------------------------------------------
 " Screen Shot: http://maxiangjiang.googlepages.com/vimim.gif
 " Latest Code: http://maxiangjiang.googlepages.com/vimim.vim
@@ -53,30 +55,30 @@
 "  News Group: http://groups.google.com/group/vimim
 " ----------------------------------------------------------- }}}
 
-" == The VimIM Instruction == {{{
-" ===============================
+" == "The VimIM Instruction" == {{{
+" =================================
 
-" The VimIM Design Goals:
-" -----------------------
+" "The VimIM Design Goals"
+" ------------------------
 " + Chinese can be input using Vim regardless of encoding
 " + Without negative impact to Vim if VimIM is not used
 " + No comprise for high speed and low memory usage
 " + Most VimIM options are enabled by default
-" + All VimIM options can be explicitly disabled at will
+" + All  VimIM options can be explicitly disabled at will
 
-" To get started: sample .vimrc for displaying Chinese:
+" "To get started: sample vimrc for displaying Chinese"
 " -----------------------------------------------------
 " set gfn=Courier_New:h12:w7,Arial_Unicode_MS
 " set gfw=NSimSun-18030,NSimSun ambiwidth=double
 " set enc=utf8 fencs=ucs-bom,utf8,chinese,taiwan,ansi
 
-" The available VimIM Options:
-" ----------------------------
+" "The VimIM Options"
+" -------------------
 " The VimIM OneKey Input
 "   - use OneKey to pick up the default
 "   - use OneKey again to perform cycle navigation
 "   - use OneKey again to search Vim Dictionary
-"   - The default key is i_<C-^>
+"   - The default key is i_CTRL-^
 " # :let g:vimim_disable_one_key=1 to disable
 "
 " The VimIM Smart Chinese Input Mode
@@ -84,7 +86,7 @@
 "   - trigger the popup menu using Smart <Space>
 "   - toggle VimIM Insert Mode automatically
 "   - toggle English and Chinese punctuation
-"   The default key is i_<C-\>
+"   The default key is i_CTRL-\
 " # :let g:vimim_disable_smart_space=1 to disable.
 "
 " The VimIM Quick English Input
@@ -107,13 +109,14 @@
 " # let g:vimim_disable_direct_unicode_input=1
 "
 " To enable VimIM "Default Off" Options:
-" # let g:vimim_enable_pinyin_tone_input=1
+" # let g:vimim_enable_non_zero_based_label=0
 " # let g:vimim_enable_label_navigation=1
-" # let g:vimim_datafile2="filename"
+" # let g:vimim_enable_pinyin_tone_input=1
 " # let g:vimim_enable_signature="signature"
+" # let g:vimim_datafile2="your_2nd_data_file_name"
 
-" The VimIM Data File:
-" --------------------
+" "The VimIM Data File"
+" ---------------------
 " The data file has to be sorted (:sort) before it can be used.
 " The basic format of the data file is simple and flexible:
 "
@@ -143,8 +146,8 @@
 " includes 'chinese', it is assumed to be encoded in 'chinese'.
 " ============================================================= }}}
 
-" == The VimIM Core Engine == {{{
-" ===============================
+" == "The VimIM Core Engine" == {{{
+" =================================
 
 if exists("b:loaded_vimim")||&cp||v:version<701
     finish
@@ -238,8 +241,8 @@ else
             let sign = g:vimim_enable_signature
             return [sign]
         elseif keyboard =~ '*todo' && len(g:vimim_enable_todo_list)>1
-            let todo = string(g:vimim_enable_todo_list)
-            return [todo]
+            let to_do = string(g:vimim_enable_todo_list)
+            return [to_do]
         else
             return
         endif
@@ -247,7 +250,7 @@ else
 
     " support direct unicode input: 39340  as in HTML &#39340;
     " --------------------------------------------------------
-    if g:vimim_disable_direct_unicode_input==0
+    if g:vimim_disable_direct_unicode_input<1
         if keyboard =~ '\d\d\d\d\d' && &encoding == "utf-8"
             if keyboard > 19968 && keyboard < 40870
                 let unicode = nr2char(keyboard)
@@ -296,7 +299,7 @@ else
 
     " inventive quick English input
     " ---------------------------------
-    if g:vimim_disable_quick_english_input==0
+    if g:vimim_disable_quick_english_input<1
         if keyboard =~ '^\D'
             if keyboard ==# toupper(keyboard)
                 return
@@ -317,7 +320,7 @@ else
 
     let wildcard = -1
     let do_wildcard_search = 0
-    if g:vimim_disable_wildcard_search==0
+    if g:vimim_disable_wildcard_search<1
         " wildcard search is explicit fuzzy search
         " ----------------------------------------
         let wildcard = match(keyboard, '[.*]')
@@ -366,10 +369,10 @@ else
             endif
         else
             if strlen(a:keyboard) < s:fuzzy_search_key_length_max
-            \ && g:vimim_disable_fuzzy_search==0
+            \ && g:vimim_disable_fuzzy_search<1
                 let do_fuzzy_search = 1
             endif
-            if g:vimim_disable_fuzzy_pinyin==0
+            if g:vimim_disable_fuzzy_pinyin<1
                 let do_fuzzy_pinyin = 1
             endif
         endif
@@ -404,7 +407,7 @@ else
     let auto_spell_success = 0
     if match_start < 0
     \ && wildcard < 0
-    \ && g:vimim_disable_auto_spell==0
+    \ && g:vimim_disable_auto_spell<1
         " samples of auto spelling rule ...
         let rules = {}
         let rules['ign'] = 'ing'
@@ -438,16 +441,12 @@ else
         return
     endif
 
-    " put a limit to the search
-    " -----------------------------
+    " put a limit to the search by one letter only
+    " --------------------------------------------
     let match_max_end = match_start
     let match_first_char = strpart(keyboard,0,1)
-    let match_next_char = nr2char(char2nr(match_first_char)+1)
-    if match_first_char == '9'
-        let match_next_char = 'a'
-    endif
-    let pattern_next = '^' . match_next_char
-    let match_max_end = match(b:lines, pattern_next)
+    let pattern_next = '^[^' . match_first_char . ']'
+    let match_max_end = match(b:lines, pattern_next, match_start)
     if match_first_char == 'z' || s:vimim_easter_eggs
         let match_max_end = len(b:lines)-1
     endif
@@ -459,7 +458,7 @@ else
     " to guess user's intention using fuzzy_pinyin
     " --------------------------------------------
     let fuzzy_pinyin_success = 0
-    if g:vimim_disable_fuzzy_pinyin==0
+    if g:vimim_disable_fuzzy_pinyin<1
     \ && do_fuzzy_pinyin > 0
     \ && match_start < 0
     \ && wildcard < 0
@@ -597,7 +596,7 @@ else
     "   chinese         chinese        3
     " ============ ================= ====
 
-    let label = s:menu_label_start_number
+    let label = g:vimim_enable_non_zero_based_label
     let menu = keyboard
     let word = keyboard
     let popupmenu_list = []
@@ -620,7 +619,7 @@ else
         for word in oneline_list
             let complete_items = {}
             let complete_items["word"] = word
-            if g:vimim_disable_popup_label==0
+            if g:vimim_disable_popup_label<1
                 if g:vimim_enable_pinyin_tone_input
                     if label < s:pinyin_tone+1
                         let label = "0" . label
@@ -629,7 +628,7 @@ else
                 let abbr = printf('%2s',label) . "\t" . word
                 let complete_items["abbr"] = abbr
             endif
-            if g:vimim_disable_popup_extra_text==0
+            if g:vimim_disable_popup_extra_text<1
                 let complete_items["menu"] = menu
             endif
             let complete_items["dup"] = 1
@@ -648,8 +647,8 @@ endif
 endfunction
 " ====================== }}}
 
-" == The VimIM Core FrontEnd == {{{
-" =================================
+" == "The VimIM Core FrontEnd" == {{{
+" ===================================
 
 " ----------------------------
 function! s:VimIM_Initialize()
@@ -657,8 +656,10 @@ function! s:VimIM_Initialize()
     let globals = []
     call add(globals, "g:vimim_datafile")
     call add(globals, "g:vimim_datafile2")
+    call add(globals, "g:vimim_dictionary")
     " ------------------------------------------------------
     call add(globals, "g:vimim_enable_label_navigation")
+    call add(globals, "g:vimim_enable_non_zero_based_label")
     call add(globals, "g:vimim_enable_menu_order_by_usage")
     call add(globals, "g:vimim_enable_pumheight")
     call add(globals, "g:vimim_enable_pinyin_tone_input")
@@ -702,6 +703,7 @@ function! s:VimIM_Initialize()
             let s:keys .= "123456789"
         endif
     endif
+    let msg='User defined completion (^U^N^P) pattern not found'
     let s:vimim_keys=split(s:keys,'\zs')
     let s:vimim_extkeys=["<BS>","<C-H>"]
     let s:vimim="vimim vimim___input_method_by_vim_of_vim_for_vimmers"
@@ -709,15 +711,14 @@ function! s:VimIM_Initialize()
     let s:fuzzy_search_max=50
     let s:fuzzy_search_key_length_max=12
     let s:enable_dynamic_menu=0
-    let s:menu_label_start_number=0
     let s:datafile_fenc_chinese=0
     let s:vimim_datafile_loaded=0
     let s:vimim_raw_data_loaded=0
+    let s:vimim_raw_dictionary_loaded=0
     let s:vimim_easter_eggs=0
     let s:punctuation_key = []
     let s:punctuation_value = []
     let g:keyboards = {}
-    let msg='User defined completion (^U^N^P) pattern not found'
     " ------------------------------------------------------
 endfunction
 
@@ -725,7 +726,7 @@ endfunction
 function! s:VimIM_Load_Datafile()
 " -------------------------------
     if s:vimim_datafile_loaded
-        if !exists("b:DataFileToggle") || b:DataFileToggle==0
+        if !exists("b:DataFileToggle") || b:DataFileToggle<1
             let b:lines = s:lines
         else
             let b:lines = s:lines2
@@ -746,7 +747,6 @@ function! s:VimIM_Load_Datafile()
         call add(files, "vimim.pinyin")
         call add(files, "vimim.wubi")
         call add(files, "vimim.cangjie")
-        call add(files, "vimim.english")
         call add(files, "vimim.quick")
         call add(files, "vimim.4corner")
             for file in files
@@ -792,7 +792,7 @@ endfunction
 " --------------------------------
 function! s:VimIM_Labels_On(start)
 " --------------------------------
-    if g:vimim_disable_popup_label==0 && g:vimim_disable_one_key
+    if g:vimim_disable_popup_label<1 && g:vimim_disable_one_key
         let lbuf = "<buffer>"
     else
         let lbuf = ""
@@ -817,7 +817,7 @@ endfunction
 function! b:VimIM_Label(n)
 " ------------------------
     if pumvisible()
-        let counts = repeat("\<C-N>",a:n-s:menu_label_start_number)
+        let counts = repeat("\<C-N>",a:n-g:vimim_enable_non_zero_based_label)
         let end = '\<C-Y>"'
         if g:vimim_enable_label_navigation
             let end = '"'
@@ -835,7 +835,6 @@ function! b:VimIM_OneKey()
         sil!return "\<C-N>"
     else
         set completeopt=menu,preview
-        let s:menu_label_start_number=0
         sil!return "\<C-X>\<C-U>\<C-U>\<C-P>"
     endif
 endfunction
@@ -883,8 +882,7 @@ function! s:VimIM_Setting_On()
     let b:saved_iminsert=&iminsert
     let b:saved_pumheight=&pumheight
     let s:_cpo = &cpo
-    let s:menu_label_start_number=1
-    if g:vimim_enable_pumheight==0
+    if g:vimim_enable_pumheight<1
         let g:vimim_enable_pumheight=10
     endif
     let &pumheight=g:vimim_enable_pumheight
@@ -897,7 +895,6 @@ endfunction
 " -----------------------------
 function! s:VimIM_Setting_Off()
 " -----------------------------
-    let s:menu_label_start_number=0
     let &completeopt=b:saved_completeopt
     let &lazyredraw=b:saved_lazyredraw
     let &pumheight=b:saved_pumheight
@@ -908,7 +905,7 @@ endfunction
 " ---------------------------------
 function! b:VimIM_Datafile_Toggle()
 " ---------------------------------
-    if !exists("b:DataFileToggle") || b:DataFileToggle==0
+    if !exists("b:DataFileToggle") || b:DataFileToggle<1
         let b:DataFileToggle=1
         let b:lines = s:lines2
     else
@@ -952,14 +949,14 @@ function! b:VimIM_Insert_On()
         inoremap <silent> <buffer> <F11>
         \ <C-O>:sil!call b:VimIM_Datafile_Toggle()<CR>
     endif
-    if g:vimim_disable_punctuation_toggle==0
+    if g:vimim_disable_punctuation_toggle<1
         inoremap <silent> <buffer> <S-F11>
         \ <C-O>:sil!call b:VimIM_Punctuation_Toggle()<CR>
     endif
-    if g:vimim_disable_chinese_punctuation==0
+    if g:vimim_disable_chinese_punctuation<1
         sil!call s:VimIM_Punctuation_On()
     endif
-    if g:vimim_disable_popup_label==0 && g:vimim_disable_one_key
+    if g:vimim_disable_popup_label<1 && g:vimim_disable_one_key
         let start = 1
         if g:vimim_enable_pinyin_tone_input > 0
             let start = s:pinyin_tone+1
@@ -985,13 +982,13 @@ function! b:VimIM_Insert_Off()
     if len(g:vimim_datafile2)>1
         silent! iunmap <silent><buffer> <F11>
     endif
-    if g:vimim_disable_punctuation_toggle==0
+    if g:vimim_disable_punctuation_toggle<1
         silent! iunmap <silent><buffer> <S-F11>
     endif
-    if g:vimim_disable_chinese_punctuation==0
+    if g:vimim_disable_chinese_punctuation<1
         sil!call s:VimIM_Punctuation_Off()
     endif
-    if g:vimim_disable_popup_label==0 && g:vimim_disable_one_key
+    if g:vimim_disable_popup_label<1 && g:vimim_disable_one_key
         sil!call s:VimIM_Labels_Off()
     endif
     if s:enable_dynamic_menu
@@ -1004,7 +1001,7 @@ endfunction
 " -------------------------------
 function! b:VimIM_Insert_Toggle()
 " -------------------------------
-    if g:vimim_disable_smart_space_autocmd==0
+    if g:vimim_disable_smart_space_autocmd<1
     \ && !exists("b:smart_space_autocmd")
     \ && has("autocmd")
         let b:smart_space_autocmd = 1
@@ -1014,7 +1011,7 @@ function! b:VimIM_Insert_Toggle()
         \ if b:lang|sil!call b:VimIM_Insert_Off()|let b:lang=1|endif
         sil!au BufUnload   <buffer> autocmd! InsertEnter,InsertLeave
     endif
-    if !exists("b:lang") || b:lang==0
+    if !exists("b:lang") || b:lang<1
         sil!call b:VimIM_Insert_On()
     else
         sil!call b:VimIM_Insert_Off()
@@ -1044,32 +1041,32 @@ function! s:VimIM_Load_Raw_Data()
     let ecdict = {}
     let ecdict['casino']='中奖啦！'
     let ecdict['grass']='天涯何处无芳草！'
-    let ecdict['January']='一月'
-    let ecdict['February']='二月'
-    let ecdict['March']='三月'
-    let ecdict['April']='四月'
-    let ecdict['May']='五月'
-    let ecdict['June']='六月'
-    let ecdict['July']='七月'
-    let ecdict['August']='八月'
-    let ecdict['September']='九月'
-    let ecdict['October']='十月'
-    let ecdict['November']='十一月'
-    let ecdict['December']='十二月'
-    let ecdict['AM']='上午'
-    let ecdict['PM']='下午'
+    let ecdict['january']='一月'
+    let ecdict['february']='二月'
+    let ecdict['march']='三月'
+    let ecdict['april']='四月'
+    let ecdict['may']='五月'
+    let ecdict['june']='六月'
+    let ecdict['july']='七月'
+    let ecdict['august']='八月'
+    let ecdict['september']='九月'
+    let ecdict['october']='十月'
+    let ecdict['november']='十一月'
+    let ecdict['december']='十二月'
+    let ecdict['am']='上午'
+    let ecdict['pm']='下午'
     let ecdict['year']='年'
     let ecdict['day']='号'
     let ecdict['hour']='时'
     let ecdict['minute']='分'
     let ecdict['second']='秒'
-    let ecdict['Monday']='星期一'
-    let ecdict['Tuesday']='星期二'
-    let ecdict['Wednesday']='星期三'
-    let ecdict['Thursday']='星期四'
-    let ecdict['Friday']='星期五'
-    let ecdict['Saturday']='星期六'
-    let ecdict['Sunday']='星期日'
+    let ecdict['monday']='星期一'
+    let ecdict['tuesday']='星期二'
+    let ecdict['wednesday']='星期三'
+    let ecdict['thursday']='星期四'
+    let ecdict['friday']='星期五'
+    let ecdict['saturday']='星期六'
+    let ecdict['sunday']='星期日'
     let ecdict['0']='○'
     let ecdict['1']='一'
     let ecdict['2']='二'
@@ -1080,7 +1077,12 @@ function! s:VimIM_Load_Raw_Data()
     let ecdict['7']='七'
     let ecdict['8']='八'
     let ecdict['9']='九'
+    let ecdict[',']='，'
+    let ecdict['.']='。'
     let s:ecdict = ecdict
+    " --------------------------------
+    let s:dummy=copy(s:translators)
+    let s:dummy.dict=copy(s:ecdict)
     " --------------------------------
     let s:easter_eggs = ["vi 文本编辑器"]
     call add(s:easter_eggs, "vim 最牛文本编辑器")
@@ -1089,17 +1091,52 @@ function! s:VimIM_Load_Raw_Data()
     " --------------------------------
 endfunction
 
+" -----------------------------------
+function! b:VimIM_Translator(english)
+" -----------------------------------
+    if &encoding != "utf-8"
+        return
+    endif
+    if s:vimim_raw_dictionary_loaded<1
+        let s:vimim_raw_dictionary_loaded=1
+        let dictionary=g:vimim_dictionary
+        if len(dictionary)<=1
+            let dictionary="vimim.english"
+        endif
+        let lines = []
+        if filereadable(dictionary)
+            let lines = readfile(dictionary)
+        elseif filereadable(s:path.dictionary)
+            let lines = readfile(s:path.dictionary)
+        endif
+        if len(lines)>1
+            for line in lines
+                let keys = split(line)
+                let s:dummy.dict[keys[0]] = keys[1]
+            endfor
+        else
+            return
+        endif
+    endif
+    let english = substitute(a:english,'\A',' & ','g')
+    let chinese = s:dummy.translate(english)
+    let chinese = substitute(chinese,"[ ']",'','g')
+    let chinese = substitute(chinese,'\a\+',' & ','g')
+    let chinese = substitute(chinese,nr2char(12290),'&\n','g')
+    return chinese
+endfunction
+
 let s:translators = {}
-" -----------------------------------------
-function! s:translators.translate(key) dict
-" -----------------------------------------
-    return join(map(split(a:key), 'get(self.dict,v:val,v:val)'))
+" ------------------------------------------
+function! s:translators.translate(line) dict
+" ------------------------------------------
+    return join(map(split(a:line),'get(self.dict,tolower(v:val),v:val)'))
 endfunction
 
 " ======================= }}}
 
-" == The VimIM Core Mapping == {{{
-" ================================
+" == "The VimIM Core Mapping" == {{{
+" ==================================
 
 if !exists("s:vimim_initialize")
 " ------------------------------
@@ -1109,21 +1146,23 @@ if !exists("s:vimim_initialize")
     sil!call s:VimIM_Load_Raw_Data()
 endif
 
-if g:vimim_disable_one_key==0
-" ---------------------------
+if g:vimim_disable_one_key<1
+" --------------------------
     sil!call s:VimIM_Labels_On(1)
     inoremap <silent> <expr> <C-^> b:VimIM_OneKey()
 endif
 
-if g:vimim_disable_smart_space==0
-" -------------------------------
-    if g:vimim_disable_dynamic_menu==0
+if g:vimim_disable_smart_space<1
+" ------------------------------
+    if g:vimim_disable_dynamic_menu<1
         let s:enable_dynamic_menu=1
     endif
     inoremap <silent> <expr> <C-\> b:VimIM_Insert_Toggle()
+    xnoremap <silent> <C-^> y']:put_<CR>:put=b:VimIM_Translator(@0)<CR>
 endif
 " ========== }}}
 
+" ----------
 " References
 " ----------
 " http://groups.google.com/group/vim_use/topics
