@@ -8,7 +8,7 @@
 " ==================================
 "      File: vimim.vim
 "    Author: Sean Ma
-"    Latest: 20090228T131200
+"    Latest: 20090228T235633
 "   License: GNU Lesser General Public License
 "       URL: http://vim.sourceforge.net/scripts/script.php?script_id=2506
 " -----------------------------------------------------------
@@ -35,9 +35,9 @@
 "            # Intelligent error correction for commonly misspelled words
 "            # The datafile format is open, simple and flexible.
 " -----------------------------------------------------------
-" EasterEgg: (1) (Neither data file nor configuration)
+" EasterEgg: (1) (Neither data file nor configuration needed)
 "            (2) (in Vim Command-line Mode, type:)  :source %<CR>
-"            (3) (in Vim Insert Mode,       type:)  vim<C-X><C-U>
+"            (3) (in Vim Insert Mode, type 4 char)  vim<C-^>
 " -----------------------------------------------------------
 "   Install: (1) download any data file you like from the link below
 "            (2) drop this file and the datafile to the plugin directory
@@ -104,10 +104,10 @@
 "   The VimIM Quick English Input
 "   - Quick English input within VimIM Chinese Input Mode
 "     (1) *alphabet ==> alphabet (starting with star)
-"     (2)  EGNLISH  ==> ENGLISH
+"     (2)  ENGLISH  ==> ENGLISH
 " # To disable :let g:vimim_disable_quick_english_input=1
 
-"   The VimIM default settings for xingma user
+"   The VimIM default settings for XingMa user
 "   - No fuzzy search   (:let g:vimim_disable_fuzzy_search=1)
 "   - No quick key mode (:let g:vimim_disable_quick_key=1)
 "   - No menu order update on past usage
@@ -210,12 +210,16 @@ if a:start
     " get user's previous selection
     " -----------------------------
     if s:vimim_menu_order_update_frequency<999
-        if s:start_row_before>start_row || s:usage_history_update>0
+        if s:start_row_before>start_row || s:usage_history_not_update>0
             let s:keyboard_chinese = ''
         else
-            let s:usage_history_update = 0
-            let chinese = s:VimIM_usage_history(start_row, start_column, 
-            \ s:start_row_before, s:start_column_before, s:keyboard_key)
+            let s:usage_history_not_update = 0
+            let row = start_row
+            let col = start_column
+            let row2 = s:start_row_before
+            let col2 = s:start_column_before
+            let key = s:keyboard_key
+            let chinese = s:VimIM_usage_history(row, col, row2, col2, key)
             if len(chinese)>0 && chinese !~ '\w'
                 let s:keyboard_chinese = chinese
                 let s:keyboard_counts += 1
@@ -292,7 +296,7 @@ else
     " initialize and re-order the data file
     " -------------------------------------
     " modify the datafile in memory based on past usage
-    if s:vimim_menu_order_update_frequency<999
+    if s:vimim_menu_order_update_frequency < 999
         let key = s:keyboard_key
         let chinese = s:keyboard_chinese
         let lines_new = s:VimIM_order_on_usage(key, chinese, lines)
@@ -309,7 +313,7 @@ else
             endif
         endif
     endif
-    if len(keyboard)>0  && keyboard =~ '\a'
+    if len(keyboard) > 0  && keyboard =~ '\a'
         let s:keyboard_key = keyboard
     else
         let s:keyboard_key = ''
@@ -318,7 +322,7 @@ else
     " add boundary to datafile search by one letter only
     " --------------------------------------------------
     let ranges = s:VimIM_search_boundary(keyboard, lines)
-    if len(ranges)<1
+    if len(ranges) < 1
         return
     elseif ranges[0]>ranges[1]
         let lines = sort(lines)
@@ -333,10 +337,10 @@ else
     " -------------------------------------------
     " do wildcard search: explicitly fuzzy search
     " -------------------------------------------
-    if s:vimim_disable_wildcard_search<1
+    if s:vimim_disable_wildcard_search < 1
         let wildcard = match(keyboard, '[.*]')
         if wildcard > 0
-            let s:usage_history_update = 1
+            let s:usage_history_not_update = 1
             let fuzzies = substitute(keyboard,'[*]','.*','g')
             let fuzzy = '^' .  fuzzies . '\>'
             call filter(lines, 'v:val =~ fuzzy')
@@ -360,7 +364,7 @@ else
     " ------------------------------------------
     " to guess user's intention using auto_spell
     " ------------------------------------------
-    if s:vimim_enable_auto_spell>0
+    if s:vimim_enable_auto_spell > 0
     \ && match_start < 0
         let key = s:VimIM_auto_spell(keyboard)
         let match_start = match(lines, '^'.key)
@@ -369,13 +373,17 @@ else
     " --------------------------------------------
     " to guess user's intention using fuzzy_pinyin
     " --------------------------------------------
-    if s:vimim_enable_fuzzy_pinyin>0
+    if s:vimim_enable_fuzzy_pinyin > 0
     \ && match_start < 0
         let key = s:VimIM_fuzzy_pinyin(keyboard)
         let match_start = match(lines, '^'.key)
     endif
 
+    " ----------------------------------------
+    " do exact match search on sorted datafile
+    " ----------------------------------------
     if match_start > -1
+        let s:usage_history_not_update = 0
         let match_end = VimIM_exact_match(match_start, keyboard, lines)
         let matched_list = lines[match_start : match_end]
         return VimIM_popupmenu_list(matched_list, localization)
@@ -384,8 +392,10 @@ else
     " ----------------------------------------
     " do fuzzy search, implicitly fuzzy search
     " ----------------------------------------
-    if s:vimim_disable_fuzzy_search<1 && strlen(keyboard) > 2
-        let s:usage_history_update = 1
+    if s:vimim_disable_fuzzy_search < 1 
+    \ && match_start < 0
+    \ && strlen(keyboard) > 2
+        let s:usage_history_not_update = 1
         let fuzzies = join(split(keyboard,'\ze'),'.*')
         let fuzzy = '^' .  fuzzies . '.*'
         let lines = filter(lines, 'v:val =~ fuzzy')
@@ -726,10 +736,10 @@ function! s:VimIM_localization()
     " ------------ ----------------- ----
     " vim encoding datafile encoding code
     " ------------ ----------------- ----
-    "   utf-8           utf-8         0
-    "   utf-8           chinese       1
-    "   chinese         utf-8         2
-    "   chinese         chinese       3
+    "   utf-8          utf-8          0
+    "   utf-8          chinese        1
+    "   chinese        utf-8          2
+    "   chinese        chinese        3
     " ------------ ----------------- ----
     if &encoding == "utf-8"
         if datafile_fenc_chinese
@@ -853,19 +863,21 @@ function! s:VimIM_setting_on()
     let s:saved_lazyredraw=&lazyredraw
     let s:saved_iminsert=&l:iminsert
     let s:saved_cpo=&cpo
+    set cpo&vim
     set completeopt=menuone,preview
     set nolazyredraw
-    set cpo&vim
     let &l:iminsert=1
+    highlight lCursor guifg=bg guibg=green
 endfunction
 
 " -----------------------------
 function! s:VimIM_setting_off()
 " -----------------------------
+    let &cpo=s:saved_cpo
     let &completeopt=s:saved_completeopt
     let &lazyredraw=s:saved_lazyredraw
     let &l:iminsert=s:saved_iminsert
-    let &cpo=s:saved_cpo
+    highlight ICursor guifg=bg guibg=fg
 endfunction
 
 " -----------------------------
@@ -1165,7 +1177,7 @@ function! s:VimIM_initialize()
     let s:keyboard_key = ''
     let s:keyboard_chinese = ''
     let s:keyboard_counts = 0
-    let s:usage_history_update = 0
+    let s:usage_history_not_update = 0
     " ------------------------------------------------
     let s:vimim_dummy_dictionary_loaded=0
     let s:current_dictionary=''
