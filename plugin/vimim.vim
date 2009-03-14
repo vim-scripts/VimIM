@@ -8,7 +8,7 @@
 " ==================================
 "      File: vimim.vim
 "    Author: Sean Ma
-"    Latest: 20090303T213904
+"    Latest: 20090313T225117
 "   License: GNU Lesser General Public License
 "       URL: http://vim.sourceforge.net/scripts/script.php?script_id=2506
 " -----------------------------------------------------------
@@ -43,11 +43,13 @@
 "            (2) drop this file and the datafile to the plugin directory
 " -----------------------------------------------------------
 " Data File: http://maxiangjiang.googlepages.com/vimim.pinyin.txt
-"            http://maxiangjiang.googlepages.com/vimim.wubi.txt
-"            http://maxiangjiang.googlepages.com/vimim.cangjie.txt
-"            http://maxiangjiang.googlepages.com/vimim.quick.txt
-"            http://maxiangjiang.googlepages.com/vimim.4corner.txt
 "            http://maxiangjiang.googlepages.com/vimim.english.txt
+" -----------------------------------------------------------
+" Data File: http://maxiangjiang.googlepages.com/vimim.4corner.txt
+"            http://maxiangjiang.googlepages.com/vimim.wubi.txt
+"            http://maxiangjiang.googlepages.com/vimim.quick.txt
+"            http://maxiangjiang.googlepages.com/vimim.cangjie.txt
+"            http://maxiangjiang.googlepages.com/vimim.array30.txt
 " -----------------------------------------------------------
 "  Usage [A] in Insert Mode, "to insert Chinese ad hoc":
 "            # type key code and hit CTRL-^ to insert Chinese
@@ -107,7 +109,7 @@
 "   - No fuzzy search   (:let g:vimim_disable_fuzzy_search=1)
 "   - No quick key mode (:let g:vimim_disable_quick_key=1)
 "   - No menu order update on past usage
-"   - It is automatically enabled for 'wubi' or 'cangjie'
+"   - It is automatically enabled for WuBi, CangJie, Quick and Array
 " # To enable :let g:vimim_enable_xingma_preference=1
 
 " # To enable VimIM "Default Off" Options
@@ -145,11 +147,12 @@
 " Following sample data files are provided:
 " --------------------------------------------------
 "  vimim.pinyin.txt    =>  input method for PinYin
+"  vimim.english.txt   =>  input method for English
+"  vimim.4corner.txt   =>  input method for 4Corner
 "  vimim.wubi.txt      =>  input method for WuBi
 "  vimim.cangjie.txt   =>  input method for CangJie
 "  vimim.quick.txt     =>  input method for Quick
-"  vimim.4corner.txt   =>  input method for 4Corner
-"  vimim.english.txt   =>  input method for English
+"  vimim.array30.txt   =>  input method for Array 30
 " --------------------------------------------------
 " ============================= }}}
 
@@ -174,13 +177,13 @@ if a:start
 
     " define valid characters for input key code
     " ------------------------------------------
-    let char_valid = "[*.0-9A-Za-z]"
-    if s:vimim_disable_quick_english_input < 1
-        let char_valid = "[*.0-9A-Za-z:/@]"
-        if s:vimim_enable_dummy_calculator>0
-            let char_valid = "[*.0-9A-Za-z:/@(,)+\-]"
-        endif
+    let char_valid = s:char_valid
+    if s:vimim_enable_dummy_calculator>0
+        let char_valid = "[*.0-9A-Za-z:/@(,)+\-]"
+    elseif s:current_datafile =~? 'array'
+        let char_valid = "[*a-z.,;/?]"
     endif
+    let s:char_valid = char_valid
 
     " avoid hanging on triggering nothing
     " -----------------------------------
@@ -257,10 +260,11 @@ else
     " Now, build again valid keyboard characters
     " ------------------------------------------
     if strlen(keyboard) < 1
-    \||  keyboard !~ '[0-9A-Za-z.*]'
-    \||  keyboard =~ '^[.*]\+'
+    \||  keyboard !~ s:char_valid
     \||  keyboard =~ '\'
     \|| (keyboard =~ '[' && keyboard =~ ']')
+    \||  keyboard =~ '^[*?]\+'
+    \|| (keyboard =~ '^[.]\+' && s:current_datafile !~ 'array')
     \|| (keyboard !~# "vim" && s:vimim_easter_eggs>0)
         return
     endif
@@ -271,8 +275,8 @@ else
         return VimIM_popupmenu_list(s:easter_eggs, 3)
     endif
 
-    " The data file is loaded once and only once.
-    " -------------------------------------------
+    " The data file is loaded once and only once
+    " ------------------------------------------
     if s:vimim_datafile_loaded < 1
         let s:vimim_datafile_loaded = 1
         if len(s:current_datafile)>0 && filereadable(s:current_datafile)
@@ -317,21 +321,31 @@ else
     " do wildcard search: explicitly fuzzy search
     " -------------------------------------------
     if s:vimim_disable_wildcard_search < 1
-        let wildcard = match(keyboard, '[.*]')
+        let wildcard_pattern = '[.*]'
+        if s:current_datafile =~? 'array'
+            let wildcard_pattern = '[?*]'
+        endif
+        let wildcard = match(keyboard, wildcard_pattern)
         if wildcard > 0
             let s:usage_update = -1
             let fuzzies = substitute(keyboard,'[*]','.*','g')
+            if s:current_datafile =~? 'array'
+                let fuzzies = substitute(keyboard,'?','.','g')
+            endif
             let fuzzy = '^' .  fuzzies . '\>'
             call filter(lines, 'v:val =~ fuzzy')
             return VimIM_popupmenu_list(lines, localization)
         endif
     endif
 
-    " For simplicity, replace 0 with o in 4 corner datafile
-    " -----------------------------------------------------
+    " For '4corner', replace the first 0 with o for simplicity
+    " For 'Array Input Method', literal dot needs to be escaped
+    " ------------------------------------------------------
+    if s:current_datafile =~? 'array'
+        let keyboard = substitute(keyboard,'\.','\\.','g')
+    endif
     let match_start = -1
     let match_start = match(lines, '^'.keyboard)
-
     " ------------------------------------------
     " to guess user's intention using auto_spell
     " ------------------------------------------
@@ -477,6 +491,9 @@ function! s:VimIM_search_boundary(keyboard, lines)
     let lines = a:lines
     let keyboard = a:keyboard
     let first_char_typed = strpart(keyboard,0,1)
+    if s:current_datafile =~? 'array' && first_char_typed == "."
+        let first_char_typed = '\.'
+    endif
     let patterns = '^' . first_char_typed
     let match_start = match(lines, patterns)
     let ranges = []
@@ -753,6 +770,7 @@ function! s:VimIM_get_datafile_name()
         call add(files, "vimim.cangjie")
         call add(files, "vimim.quick")
         call add(files, "vimim.4corner")
+        call add(files, "vimim.array30")
         for file in files
             call insert(files, file.".txt")
         endfor
@@ -823,7 +841,7 @@ function! s:VimIM_setting_on()
     let s:saved_iminsert=&l:iminsert
     let s:saved_cpo=&cpo
     set cpo&vim
-    set completeopt=menuone,preview
+    set completeopt=menuone
     set nolazyredraw
     let &l:iminsert = 1
     highlight lCursor guifg=bg guibg=green
@@ -924,7 +942,7 @@ function! <SID>VimIM_OneKey()
             sil!return "\<C-N>"
         endif
     else
-        set completeopt=menu,preview
+        set completeopt=menu
         sil!return "\<C-X>\<C-U>\<C-U>\<C-P>"
     endif
 endfunction
@@ -989,24 +1007,24 @@ function! s:VimIM_seed_data()
     let punctuations["'"]="“"
     let punctuations['"']="”"
     let punctuations["!"]="！"
-    let punctuations["?"]="？"
+    let punctuations["@"]="・"
     let punctuations["~"]="～"
-    let punctuations[";"]="；"
     let punctuations["("]="（"
     let punctuations[")"]="）"
-    let punctuations[","]="，"
     let punctuations["\\"]="。"
     let punctuations["^"]="……"
     let punctuations["_"]="——"
+    if s:current_datafile !~ 'array'
+        let punctuations[","]="，"
+        let punctuations[";"]="；"
+        let punctuations["?"]="？"
+    endif
+    if s:current_datafile !~ 'array' && s:vimim_disable_wildcard_search>0
+        let punctuations["."]="。"
+    endif
     if s:vimim_enable_dummy_calculator<0
         let punctuations["+"]="＋"
         let punctuations["-"]="－"
-    endif
-    if s:vimim_disable_quick_english_input>0
-        let punctuations["@"]="・"
-    endif
-    if s:vimim_disable_wildcard_search>0
-        let punctuations["."]="。"
     endif
     let s:punctuations = punctuations
     " --------------------------------
@@ -1144,6 +1162,8 @@ function! s:VimIM_initialize()
     let key=join(map(range(char2nr('a'),char2nr('z')),'nr2char(v:val)'),'')
     if s:vimim_disable_wildcard_search < 1
         let key .= ".*"
+    elseif s:current_datafile =~ 'array'
+        let key .= "?*"
     endif
     let s:vimim_pinyin_tone = 0
     if s:vimim_enable_pinyin_tone_input > 0
@@ -1185,11 +1205,15 @@ function! s:VimIM_initialize()
     " ------------------------------------------------
     let s:vimim_easter_eggs = 0
     let datafile = s:VimIM_get_datafile_name()
+    let s:char_valid = "[*.0-9A-Za-z]"
     let s:current_datafile = datafile
     if len(datafile) > 0
         if s:vimim_enable_xingma_preference > 0
-        \|| datafile =~ 'wubi'
-        \|| datafile =~ 'cangjie'
+        \|| datafile =~? 'wubi'
+        \|| datafile =~? 'cangjie'
+        \|| datafile =~? 'quick'
+        \|| datafile =~? 'array'
+        \|| datafile =~? 'corner'
             let s:vimim_disable_fuzzy_search = 1
             let s:vimim_disable_quick_key = 1
             let s:vimim_menu_order_update_frequency = 999
