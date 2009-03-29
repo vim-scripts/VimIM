@@ -9,7 +9,7 @@
 "      File: vimim.vim
 "    Author: Sean Ma <vimim@googlegroups.com>
 "   License: GNU Lesser General Public License
-"    Latest: 20090326T233530
+"    Latest: 20090328T230937
 "       URL: http://vim.sourceforge.net/scripts/script.php?script_id=2506
 " -----------------------------------------------------------
 "    Readme: The VimIM is a Vim plugin designed as an independent
@@ -683,7 +683,9 @@ function! s:VimIM_unicode(keyboard,n)
 " -----------------------------------
     let digit = str2nr(a:keyboard,a:n)
     let results = []
-    if digit > 19968 && digit < 40870
+    let start = 19968
+    let end = 40870
+    if digit > start && digit < end
         let unicode = nr2char(digit)
         let results = [unicode]
     endif
@@ -836,10 +838,6 @@ endfunction
 function! s:VimIM_insert_on()
 " ---------------------------
     let s:vimim_insert = 1
-    if s:vimim_disable_chinese_punctuation < 1
-        inoremap <silent><C-A>
-        \ <C-O>:sil!call <SID>VimIM_punctuation_toggle()<CR>
-    endif
     sil!call s:VimIM_setting_on()
     " ==== static menu ====
     if s:vimim_enable_dynamic_menu < 1
@@ -889,11 +887,15 @@ function! s:VimIM_insert_on()
             \  <C-R>=pumvisible()?"\<lt>C-E>":""<CR>'. char .
             \ '<C-R>=<SID>VimIM_check("\<lt>C-X>\<lt>C-U>")<CR>'
         endfor
-        if s:vimim_disable_popup_label < 1
-            sil!call s:VimIM_labels_on(1)
-        endif
         inoremap <silent> <Space> <C-R>=<SID>VimIM_check
         \("\<lt>C-X>\<lt>C-U>")<CR><C-R>=<SID>VimIMSpace()<CR>
+    endif
+    if s:vimim_disable_popup_label < 1
+        sil!call s:VimIM_labels_on(1)
+    endif
+    if s:vimim_disable_chinese_punctuation < 1
+        inoremap <silent><C-A>
+        \ <C-O>:sil!call <SID>VimIM_punctuation_toggle()<CR>
     endif
 endfunction
 
