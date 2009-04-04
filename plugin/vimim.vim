@@ -9,7 +9,7 @@
 "      File: vimim.vim
 "    Author: Sean Ma <vimim@googlegroups.com>
 "   License: GNU Lesser General Public License
-"    Latest: 20090328T230937
+"    Latest: 20090401T211354
 "       URL: http://vim.sourceforge.net/scripts/script.php?script_id=2506
 " -----------------------------------------------------------
 "    Readme: The VimIM is a Vim plugin designed as an independent
@@ -42,24 +42,30 @@
 "   Install: (1) download any data file you like from the link below
 "            (2) drop this file and the datafile to the plugin directory
 " -----------------------------------------------------------
-" Data File: http://maxiangjiang.googlepages.com/vimim.pinyin.txt
-"            http://maxiangjiang.googlepages.com/vimim.english.txt
-"            http://maxiangjiang.googlepages.com/vimim.double_pinyin.txt
-"            http://maxiangjiang.googlepages.com/vimim.phonetic.txt
-" -----------------------------------------------------------
-" Data File: http://maxiangjiang.googlepages.com/vimim.4corner.txt
-"            http://maxiangjiang.googlepages.com/vimim.wubi.txt
-"            http://maxiangjiang.googlepages.com/vimim.quick.txt
-"            http://maxiangjiang.googlepages.com/vimim.cangjie.txt
-"            http://maxiangjiang.googlepages.com/vimim.array30.txt
-" -----------------------------------------------------------
 " Usage (1): [in Insert Mode] "to insert Chinese ad hoc":
 "            # type key code and hit <CTRL-^> to insert Chinese
 " -----------------------------------------------------------
-" Usage (2): [in Insert Mode] "to input Chinese continously":
+" Usage (2): [in Insert Mode] "to input Chinese continuously":
 "            # hit <CTRL-\> to toggle the VimIM Chinese Input Mode
 "            (2.1) [static mode]  <Space> => Chinese  <Tab> => English
 "            (2.2) [dynamic mode] any valid key code => Chinese
+" -----------------------------------------------------------
+" The VimIM Sample Data File downloading:
+" (1) goto http://groups.google.com/group/vimim/files
+" (2) right-click on the title of the desired file
+" (3) select *save link as* (in Firefox)
+"       or *save target as* (in Internet Explorer)
+" ---------------------------  "phonetic-code" oriented
+" vimim.pinyin.txt         =>  input method for Pinyin
+" vimim.double_pinyin.txt  =>  input method for Double Pinyin
+" vimim.phonetic.txt       =>  input method for Phonetic
+" vimim.english.txt        =>  input method for English
+" ---------------------------  "shape-code" oriented
+" vimim.wubi.txt           =>  input method for Wu Bi
+" vimim.cangjie.txt        =>  input method for Cang Jie
+" vimim.quick.txt          =>  input method for Quick
+" vimim.array30.txt        =>  input method for Array 30
+" vimim.4corner.txt        =>  input method for Four Corner
 " ----------------------------- }}}
 
 " == "The VimIM Instruction" == {{{
@@ -137,21 +143,6 @@
 " The <key> is what is typed in alphabet, ready to be replaced.
 " The <value>, separated by spaces, is what will be input.
 " The 2nd and the 3rd column can be repeated without restriction.
-
-" The VimIM Sample Data File, "phonetic-code" oriented
-" ----------------------------------------------------
-" vimim.pinyin.txt         =>  input method for Pinyin
-" vimim.double_pinyin.txt  =>  input method for Double Pinyin
-" vimim.phonetic.txt       =>  input method for Phonetic
-" vimim.english.txt        =>  input method for English
-"
-" The VimIM Sample Data File, "shape-code" oriented
-" -------------------------------------------------
-" vimim.wubi.txt           =>  input method for Wu Bi
-" vimim.cangjie.txt        =>  input method for Cang Jie
-" vimim.quick.txt          =>  input method for Quick
-" vimim.array30.txt        =>  input method for Array 30
-" vimim.4corner.txt        =>  input method for Four Corner
 " ============================= }}}
 
 " == "The VimIM Core Engine" == {{{
@@ -208,12 +199,29 @@ if a:start
         let s:start_row_before = start_row
         let s:start_column_before = start_column
     endif
+
+    if s:vimim_disable_no_space_english_input < 1
+    \&& s:vimim_enable_dynamic_menu < 1
+        if current_line[start_column-1] == " "
+        \&& current_line[start_column-2] =~ '\a'
+            let s:vimim_disable_no_space_english_input=-1
+            let start_column -= 1
+        endif
+    endif
+
     return start_column
 
 else
 
     let keyboard = a:keyboard
 
+    if s:vimim_disable_no_space_english_input < 0
+        let s:vimim_disable_no_space_english_input=0
+        if strpart(keyboard,0,1) == " "
+            let keyboard = strpart(keyboard,1)
+        endif
+    endif
+ 
     " support direct Unicode input:
     " (1) 5 whole digits: eg 39340 as &#39340; in HTML
     " (2) 4 hex   digits: eg 99ac  as &#x99ac; in HTML
@@ -232,11 +240,9 @@ else
 
     " do quick english input and hunt for easter eggs
     " -----------------------------------------------
-    if s:vimim_disable_quick_english_input < 1
-        sil!let english = s:VimIM_quick_English_input(keyboard)
-        if len(english) > 0
-            return english
-        endif
+    sil!let english = s:VimIM_quick_English_input(keyboard)
+    if len(english) > 0
+        return english
     endif
 
     " Now, build again valid keyboard characters
@@ -303,14 +309,14 @@ else
     " -------------------------------------------
     if s:vimim_disable_wildcard_search < 1
         let wildcard_pattern = '[.*]'
-        if s:current_datafile=~'array' || s:current_datafile=~'phonetic'
+        if s:current_datafile_has_dot_key > 0
             let wildcard_pattern = '[?*]'
         endif
         let wildcard = match(keyboard, wildcard_pattern)
         if wildcard > 0
             let s:usage_update = -1
             let fuzzies = substitute(keyboard,'[*]','.*','g')
-            if s:current_datafile=~'array'||s:current_datafile=~'phonetic'
+            if s:current_datafile_has_dot_key > 0
                 let fuzzies = substitute(keyboard,'?','.','g')
             endif
             let fuzzy = '^' .  fuzzies . '\>'
@@ -322,7 +328,7 @@ else
     " For '4corner', replace the first 0 with o for simplicity
     " For 'Array/Phonetic Input Method', escape literal dot
     " ------------------------------------------------------
-    if s:current_datafile =~ 'array' || s:current_datafile =~ 'phonetic'
+    if s:current_datafile_has_dot_key > 0
         let keyboard = substitute(keyboard,'\.','\\.','g')
     endif
     let match_start = -1
@@ -467,8 +473,7 @@ function! s:VimIM_search_boundary(keyboard, lines)
     let lines = a:lines
     let keyboard = a:keyboard
     let first_char_typed = strpart(keyboard,0,1)
-    if (s:current_datafile =~ 'array'||s:current_datafile =~ 'phonetic')
-    \&& first_char_typed == "."
+    if s:current_datafile_has_dot_key > 0 && first_char_typed == "."
         let first_char_typed = '\.'
     endif
     let patterns = '^' . first_char_typed
@@ -623,9 +628,7 @@ function! s:VimIM_quick_English_input(keyboard)
     """ intial single star or double star
     if keyboard =~ '^*' && keyboard !~ '^\d\+\s\+'
         if keyboard =~ '^*\{1}\w'
-            if s:vimim_disable_quick_english_input < 1
-                let result = strpart(keyboard,1)
-            endif
+            let result = strpart(keyboard,1)
         elseif keyboard =~ '^*\{2}\w'
             let chinese=copy(s:translators)
             let chinese.dict=s:ecdict
@@ -678,10 +681,10 @@ function! s:VimIM_quick_English_input(keyboard)
     return results
 endfunction
 
-" -----------------------------------
-function! s:VimIM_unicode(keyboard,n)
-" -----------------------------------
-    let digit = str2nr(a:keyboard,a:n)
+" ------------------------------------
+function! s:VimIM_unicode(keyboard, n)
+" ------------------------------------
+    let digit = str2nr(a:keyboard, a:n)
     let results = []
     let start = 19968
     let end = 40870
@@ -750,6 +753,7 @@ function! s:VimIM_get_datafile_name()
         call add(files, "vimim.4corner")
         call add(files, "vimim.array30")
         call add(files, "vimim.phonetic")
+        call add(files, "vimim.key31")
         call add(files, "vimim.double_pinyin")
         for file in files
             call insert(files, file.".txt")
@@ -774,6 +778,231 @@ endfunction
 
 " == "The VimIM Core FrontEnd" == {{{
 " ===================================
+" ----------------------------
+function! s:VimIM_initialize()
+" ----------------------------
+    let G = []
+    call add(G, "g:vimim_datafile")
+    call add(G, "g:vimim_signature")
+    call add(G, "g:vimim_menu_order_update_frequency")
+    call add(G, "g:vimim_disable_quick_key")
+    " ------------------------------------------------
+    call add(G, "g:vimim_disable_direct_unicode_input")
+    call add(G, "g:vimim_disable_wildcard_search")
+    call add(G, "g:vimim_disable_fuzzy_search")
+    call add(G, "g:vimim_disable_one_key")
+    call add(G, "g:vimim_disable_chinese_input_mode")
+    call add(G, "g:vimim_disable_smart_space_autocmd")
+    call add(G, "g:vimim_disable_chinese_punctuation")
+    call add(G, "g:vimim_disable_popup_extra_text")
+    call add(G, "g:vimim_disable_popup_label")
+    call add(G, "g:vimim_disable_english_input_by_enter_key")
+    " ------------------------------------------------
+    call add(G, "g:vimim_disable_no_space_english_input")
+    call add(G, "g:vimim_enable_dynamic_menu")
+    call add(G, "g:vimim_enable_xingma_preference")
+    call add(G, "g:vimim_enable_label_navigation")
+    call add(G, "g:vimim_enable_auto_spell")
+    call add(G, "g:vimim_enable_fuzzy_pinyin")
+    call add(G, "g:vimim_enable_zero_based_label")
+    " ------------------------------------------------
+    for variable in G
+        let s_variable = substitute(variable,"g:","s:",'')
+        if !exists(variable)
+            exe 'let '. s_variable . '=0'
+        else
+            exe 'let '. s_variable .'='. variable
+            exe 'unlet! ' . variable
+        endif
+    endfor
+    " ------------------------------------------------
+    let s:vimim_easter_eggs = 0
+    let s:current_datafile_has_dot_key = 0
+    let datafile = s:VimIM_get_datafile_name()
+    let s:current_datafile = datafile
+    if s:current_datafile =~ 'array'
+       \|| s:current_datafile =~ 'phonetic'
+       \|| s:current_datafile =~ 'key31'
+        let s:current_datafile_has_dot_key = 1
+    endif
+    if len(datafile) > 0
+        if s:vimim_enable_xingma_preference > 0
+        \|| s:current_datafile_has_dot_key > 0
+        \|| datafile =~? 'wubi'
+        \|| datafile =~? 'cangjie'
+        \|| datafile =~? 'quick'
+        \|| datafile =~? 'corner'
+            let s:vimim_disable_fuzzy_search = 1
+            let s:vimim_disable_quick_key = 1
+            let s:vimim_menu_order_update_frequency = 999
+        endif
+    endif
+    " ------------------------------------------
+    " define valid characters for input key code
+    if s:vimim_disable_wildcard_search < 1
+        let s:char_valid = "[.*0-9A-Za-z]"
+        if s:current_datafile =~ 'double_pinyin'
+            let s:char_valid = "[.*a-z;]"
+        elseif s:current_datafile =~ 'array'
+            let s:char_valid = "[?*a-z.,;/]"
+        elseif s:current_datafile =~ 'phonetic'
+            let s:char_valid = "[?*0-9a-z.,;/\-]"
+        elseif s:current_datafile =~ 'key31'
+            let s:char_valid = "[?*a-z.,';/]"
+        endif
+    else
+        let s:char_valid = "[0-9A-Za-z]"
+        if s:current_datafile =~ 'double_pinyin'
+            let s:char_valid = "[a-z;]"
+        elseif s:current_datafile =~ 'array'
+            let s:char_valid = "[a-z.,;/]"
+        elseif s:current_datafile =~ 'phonetic'
+            let s:char_valid = "[0-9a-z.,;/\-]"
+        elseif s:current_datafile =~ 'key31'
+            let s:char_valid = "[a-z.,';/]"
+        endif
+    endif
+    " -------------------------------------------------------
+    function! s:VimIM_expand_character_class(character_class)
+    " -------------------------------------------------------
+        let character_string = ""
+        let i = 0
+        while i < 256
+            let x = nr2char(i)
+            if x =~# a:character_class
+                let character_string .= x
+            endif
+            let i += 1
+        endwhile
+        return character_string
+    endfunction
+    " ----------------------------------------------------
+    let key = s:VimIM_expand_character_class(s:char_valid)
+    let keys = split(key, '\zs')
+    let keys_ext = ["<BS>", "<C-H>"]
+    let s:vimim_keys = extend(keys, keys_ext)
+    " ------------------------------------------------
+    let s:datafile_lines = []
+    let s:vimim_insert = 0
+    let s:vimim_labels_on_loaded = 0
+    let s:vimim_seed_data_loaded = 0
+    let s:vimim_datafile_loaded = 0
+    let s:vimim_punctuation = 0
+    let s:punctuations = {}
+    " ------------------------------------------------
+    let s:start_row_before = 0
+    let s:start_column_before = 0
+    let s:keyboard_key = ''
+    let s:keyboard_chinese = ''
+    let s:keyboard_counts = 0
+    let s:usage_update = -1
+    " ------------------------------------------------
+    let s:vimim_dummy_dictionary_loaded = 0
+    let s:current_dictionary=''
+    let dictionary = s:path . "vimim.english.txt"
+    if filereadable(dictionary)
+        let s:current_dictionary = dictionary
+    endif
+endfunction
+
+" ---------------------------
+function! s:VimIM_seed_data()
+" ---------------------------
+    if s:vimim_seed_data_loaded
+        return
+    else
+        let s:vimim_seed_data_loaded = 1
+    endif
+    " --------------------------------
+    let punctuations = {}
+    let punctuations["#"]="＃"
+    let punctuations["%"]="％"
+    let punctuations["$"]="￥"
+    let punctuations["&"]="※"
+    let punctuations["{"]="『"
+    let punctuations["}"]="』"
+    let punctuations["["]="【"
+    let punctuations["]"]="】"
+    let punctuations["<"]="《"
+    let punctuations[">"]="》"
+    let punctuations["'"]="“"
+    let punctuations['"']="”"
+    let punctuations["!"]="！"
+    let punctuations["@"]="・"
+    let punctuations["~"]="～"
+    let punctuations["("]="（"
+    let punctuations[")"]="）"
+    let punctuations["\\"]="。"
+    let punctuations["^"]="……"
+    let punctuations["_"]="——"
+    let punctuations["+"]="＋"
+    if s:current_datafile_has_dot_key < 1
+        let punctuations[","]="，"
+        let punctuations["-"]="－"
+        let punctuations["?"]="？"
+        if s:current_datafile !~ 'double_pinyin'
+            let punctuations[";"]="；"
+        endif
+    endif
+    if s:current_datafile_has_dot_key < 1
+    \&& s:vimim_disable_wildcard_search > 0
+        let punctuations["."]="。"
+        let punctuations["*"]="﹡"
+    endif
+    let s:punctuations = punctuations
+    " --------------------------------
+    let ecdict = {}
+    let ecdict['casino']='中奖啦！'
+    let ecdict['grass']='天涯何处无芳草！'
+    let ecdict['january']='一月'
+    let ecdict['february']='二月'
+    let ecdict['march']='三月'
+    let ecdict['april']='四月'
+    let ecdict['may']='五月'
+    let ecdict['june']='六月'
+    let ecdict['july']='七月'
+    let ecdict['august']='八月'
+    let ecdict['september']='九月'
+    let ecdict['october']='十月'
+    let ecdict['november']='十一月'
+    let ecdict['december']='十二月'
+    let ecdict['am']='上午'
+    let ecdict['pm']='下午'
+    let ecdict['year']='年'
+    let ecdict['day']='号'
+    let ecdict['hour']='时'
+    let ecdict['minute']='分'
+    let ecdict['second']='秒'
+    let ecdict['monday']='星期一'
+    let ecdict['tuesday']='星期二'
+    let ecdict['wednesday']='星期三'
+    let ecdict['thursday']='星期四'
+    let ecdict['friday']='星期五'
+    let ecdict['saturday']='星期六'
+    let ecdict['sunday']='星期日'
+    let ecdict['0']='○'
+    let ecdict['1']='一'
+    let ecdict['2']='二'
+    let ecdict['3']='三'
+    let ecdict['4']='四'
+    let ecdict['5']='五'
+    let ecdict['6']='六'
+    let ecdict['7']='七'
+    let ecdict['8']='八'
+    let ecdict['9']='九'
+    let ecdict[',']='，'
+    let ecdict['.']='。'
+    let s:ecdict = ecdict
+    " --------------------------------
+    let s:dummy=copy(s:translators)
+    let s:dummy.dict=copy(s:ecdict)
+    " --------------------------------
+    let s:easter_eggs = ["vi 文本编辑器"]
+    call add(s:easter_eggs, "vim 最牛文本编辑器")
+    call add(s:easter_eggs, "vim 精力 生氣")
+    call add(s:easter_eggs, "vimim 中文输入法")
+    " --------------------------------
+endfunction
 
 " --------------------------------
 function! s:VimIM_labels_on(label)
@@ -894,6 +1123,7 @@ function! s:VimIM_insert_on()
         sil!call s:VimIM_labels_on(1)
     endif
     if s:vimim_disable_chinese_punctuation < 1
+        sil!call s:VimIM_punctuation_on()
         inoremap <silent><C-A>
         \ <C-O>:sil!call <SID>VimIM_punctuation_toggle()<CR>
     endif
@@ -983,104 +1213,6 @@ function! <SID>VimIM_OneKey()
     endif
 endfunction
 
-" ---------------------------
-function! s:VimIM_seed_data()
-" ---------------------------
-    if s:vimim_seed_data_loaded
-        return
-    else
-        let s:vimim_seed_data_loaded = 1
-    endif
-    " --------------------------------
-    let punctuations = {}
-    let punctuations["#"]="＃"
-    let punctuations["%"]="％"
-    let punctuations["$"]="￥"
-    let punctuations["&"]="※"
-    let punctuations["{"]="『"
-    let punctuations["}"]="』"
-    let punctuations["["]="【"
-    let punctuations["]"]="】"
-    let punctuations["<"]="《"
-    let punctuations[">"]="》"
-    let punctuations["'"]="“"
-    let punctuations['"']="”"
-    let punctuations["!"]="！"
-    let punctuations["@"]="・"
-    let punctuations["~"]="～"
-    let punctuations["("]="（"
-    let punctuations[")"]="）"
-    let punctuations["\\"]="。"
-    let punctuations["^"]="……"
-    let punctuations["_"]="——"
-    let punctuations["+"]="＋"
-    if (s:current_datafile!~'array' && s:current_datafile!~'phonetic')
-        let punctuations[","]="，"
-        let punctuations["-"]="－"
-        let punctuations["?"]="？"
-        if s:current_datafile!~'double_pinyin'
-            let punctuations[";"]="；"
-        endif
-    endif
-    if (s:current_datafile!~'array' && s:current_datafile!~'phonetic')
-    \&& s:vimim_disable_wildcard_search > 0
-        let punctuations["."]="。"
-    endif
-    let s:punctuations = punctuations
-    " --------------------------------
-    let ecdict = {}
-    let ecdict['casino']='中奖啦！'
-    let ecdict['grass']='天涯何处无芳草！'
-    let ecdict['january']='一月'
-    let ecdict['february']='二月'
-    let ecdict['march']='三月'
-    let ecdict['april']='四月'
-    let ecdict['may']='五月'
-    let ecdict['june']='六月'
-    let ecdict['july']='七月'
-    let ecdict['august']='八月'
-    let ecdict['september']='九月'
-    let ecdict['october']='十月'
-    let ecdict['november']='十一月'
-    let ecdict['december']='十二月'
-    let ecdict['am']='上午'
-    let ecdict['pm']='下午'
-    let ecdict['year']='年'
-    let ecdict['day']='号'
-    let ecdict['hour']='时'
-    let ecdict['minute']='分'
-    let ecdict['second']='秒'
-    let ecdict['monday']='星期一'
-    let ecdict['tuesday']='星期二'
-    let ecdict['wednesday']='星期三'
-    let ecdict['thursday']='星期四'
-    let ecdict['friday']='星期五'
-    let ecdict['saturday']='星期六'
-    let ecdict['sunday']='星期日'
-    let ecdict['0']='○'
-    let ecdict['1']='一'
-    let ecdict['2']='二'
-    let ecdict['3']='三'
-    let ecdict['4']='四'
-    let ecdict['5']='五'
-    let ecdict['6']='六'
-    let ecdict['7']='七'
-    let ecdict['8']='八'
-    let ecdict['9']='九'
-    let ecdict[',']='，'
-    let ecdict['.']='。'
-    let s:ecdict = ecdict
-    " --------------------------------
-    let s:dummy=copy(s:translators)
-    let s:dummy.dict=copy(s:ecdict)
-    " --------------------------------
-    let s:easter_eggs = ["vi 文本编辑器"]
-    call add(s:easter_eggs, "vim 最牛文本编辑器")
-    call add(s:easter_eggs, "vim 精力 生氣")
-    call add(s:easter_eggs, "vimim 中文输入法")
-    " --------------------------------
-endfunction
-
 " --------------------------------------------
 function! <SID>VimIM_dummy_translator(english)
 " --------------------------------------------
@@ -1119,114 +1251,6 @@ function! s:translators.translate(line) dict
 " ------------------------------------------
     return join(map(split(a:line),'get(self.dict,tolower(v:val),v:val)'))
 endfunction
-
-" ----------------------------
-function! s:VimIM_initialize()
-" ----------------------------
-    let G = []
-    call add(G, "g:vimim_datafile")
-    call add(G, "g:vimim_signature")
-    call add(G, "g:vimim_menu_order_update_frequency")
-    call add(G, "g:vimim_disable_quick_key")
-    " ------------------------------------------------
-    call add(G, "g:vimim_disable_direct_unicode_input")
-    call add(G, "g:vimim_disable_wildcard_search")
-    call add(G, "g:vimim_disable_fuzzy_search")
-    call add(G, "g:vimim_disable_one_key")
-    call add(G, "g:vimim_disable_chinese_input_mode")
-    call add(G, "g:vimim_disable_smart_space_autocmd")
-    call add(G, "g:vimim_disable_chinese_punctuation")
-    call add(G, "g:vimim_disable_popup_extra_text")
-    call add(G, "g:vimim_disable_popup_label")
-    call add(G, "g:vimim_disable_quick_english_input")
-    call add(G, "g:vimim_disable_english_input_by_enter_key")
-    " ------------------------------------------------
-    call add(G, "g:vimim_enable_dynamic_menu")
-    call add(G, "g:vimim_enable_xingma_preference")
-    call add(G, "g:vimim_enable_label_navigation")
-    call add(G, "g:vimim_enable_auto_spell")
-    call add(G, "g:vimim_enable_fuzzy_pinyin")
-    call add(G, "g:vimim_enable_zero_based_label")
-    " ------------------------------------------------
-    for variable in G
-        let s_variable = substitute(variable,"g:","s:",'')
-        if !exists(variable)
-            exe 'let '. s_variable . '=0'
-        else
-            exe 'let '. s_variable .'='. variable
-            exe 'unlet! ' . variable
-        endif
-    endfor
-    " ------------------------------------------------
-    let s:vimim_easter_eggs = 0
-    let datafile = s:VimIM_get_datafile_name()
-    let s:current_datafile = datafile
-    if len(datafile) > 0
-        if s:vimim_enable_xingma_preference > 0
-        \|| datafile =~? 'wubi'
-        \|| datafile =~? 'cangjie'
-        \|| datafile =~? 'quick'
-        \|| datafile =~? 'corner'
-        \|| datafile =~? 'array'
-        \|| datafile =~? 'phonetic'
-            let s:vimim_disable_fuzzy_search = 1
-            let s:vimim_disable_quick_key = 1
-            let s:vimim_menu_order_update_frequency = 999
-        endif
-    endif
-    " ------------------------------------------
-    " define valid characters for input key code
-    let s:char_valid = "[*.0-9A-Za-z]"
-    " ------------------------------------------------
-    if s:current_datafile =~ 'double_pinyin'
-        let s:char_valid = "[*.a-z;]"
-    elseif s:current_datafile =~ 'array'
-        let s:char_valid = "[*a-z.,;/?]"
-    elseif s:current_datafile =~ 'phonetic'
-        let s:char_valid = "[*0-9a-z.,;/?\-]"
-    endif
-    " -------------------------------------------------------
-    function! s:VimIM_expand_character_class(character_class)
-    " -------------------------------------------------------
-        let character_string = ""
-        let i = 0
-        while i < 256
-            let x = nr2char(i)
-            if x =~# a:character_class
-                let character_string .= x
-            endif
-            let i += 1
-        endwhile
-        return character_string
-    endfunction
-    " ------------------------------------------------
-    let key = s:VimIM_expand_character_class(s:char_valid)
-    let keys = split(key, '\zs')
-    let keys_ext = ["<BS>", "<C-H>"]
-    let s:vimim_keys = extend(keys, keys_ext)
-    " ------------------------------------------------
-    let s:datafile_lines = []
-    let s:vimim_insert = 0
-    let s:vimim_labels_on_loaded = 0
-    let s:vimim_seed_data_loaded = 0
-    let s:vimim_datafile_loaded = 0
-    let s:vimim_punctuation = 0
-    let s:punctuations = {}
-    " ------------------------------------------------
-    let s:start_row_before = 0
-    let s:start_column_before = 0
-    let s:keyboard_key = ''
-    let s:keyboard_chinese = ''
-    let s:keyboard_counts = 0
-    let s:usage_update = -1
-    " ------------------------------------------------
-    let s:vimim_dummy_dictionary_loaded = 0
-    let s:current_dictionary=''
-    let dictionary = s:path . "vimim.english.txt"
-    if filereadable(dictionary)
-        let s:current_dictionary = dictionary
-    endif
-endfunction
 " ============================== }}}
 
 " == "The VimIM Core Mapping" == {{{
@@ -1252,6 +1276,6 @@ endif
 " ----------
 " References
 " ----------
+" http://vim.sourceforge.net/scripts/script.php?script_id=2506
 " http://groups.google.com/group/vimim
-" http://groups.google.com/group/vim_use/topics
-" http://maxiangjiang.googlepages.com/vimim.html
+" http://vimim.googlegroups.com/web/vimim.html
