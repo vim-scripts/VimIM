@@ -3,38 +3,26 @@
 " -----------------------------------------------------
 "   VimIM -- Input Method by Vim, of Vim, for Vimmers
 " =====================================================
-let $VimIM = "$Date: 2011-01-02 20:48:19 -0800 (Sun, 02 Jan 2011) $"
-let $VimIM = "$Revision: 4601 $"
-" -------------------------------------------------------------------
+let $VimIM = "$Date: 2011-01-15 15:03:22 -0800 (Sat, 15 Jan 2011) $"
+let $VimIM = "$Revision: 4758 $"
+let  VimIM = string("VimIM 經典:") "|         vim<C-6><C-6>
+let  VimIM = string("VimIM 環境:") "|       vimim<C-6><C-6>
+let  VimIM = string("VimIM 幫助:") "|   vimimhelp<C-6><C-6>
 
-" -------------------------
-" Hunting VimIM easter eggs
-" -------------------------
-" - VimIM 經典:  type:            vim<C-6><C-6>
-" - VimIM 環境:  type:          vimim<C-6><C-6>
-" - VimIM 程式:  type:       vimimvim<C-6><C-6>
-" - VimIM 幫助:  type:      vimimhelp<C-6><C-6>
-" - VimIM 測試:  type:     vimimdebug<C-6><C-6>
-" -------------------------------------------------------------------
-let egg  = ["http://code.google.com/p/vimim/issues/list"]
-let egg += ["http://vim.sf.net/scripts/script.php?script_id=2506"]
+let egg  = ["http://vim.sf.net/scripts/script.php?script_id=2506"]
 let egg += ["http://vimim-data.googlecode.com"]
-let egg += ["http://pim-cloud.appspot.com"]
 let egg += ["http://groups.google.com/group/vimim"]
 let egg += ["http://vimim.googlecode.com/svn/vimim/vimim.html"]
 let egg += ["http://vimim.googlecode.com/svn/vimim/vimim.vim.html"]
-" -------------------------------------------------------------------
+let egg += ["http://code.google.com/p/vimim/issues/list"]
 
-let VimIM = " ====  Vim Input Method  ==== {{{"
+let VimIM = " ====  Introduction      ==== {{{"
 " ============================================
 "       File: vimim.vim
 "     Author: vimim <vimim@googlegroups.com>
 "    License: GNU Lesser General Public License
-"   Official: http://vim.sf.net/scripts/script.php?script_id=2506
-" -----------------------------------------------------------
-"    Readme: VimIM is a Vim plugin designed as an independent IM
-"            (Input Method) to support the input of multi-byte.
-"            VimIM aims to complete the Vim as the greatest editor.
+"    Readme:  VimIM is a Vim plugin designed as an independent IM
+"             (Input Method) to support the input of multi-byte.
 " -----------------------------------------------------------
 "  Features: * "Plug & Play": as a client to VimIM embedded backends
 "            * "Plug & Play": as a client to "myCloud" and "Cloud"
@@ -42,48 +30,33 @@ let VimIM = " ====  Vim Input Method  ==== {{{"
 "            * CJK can be input without changing mode
 "            * support "wubi", "erbi", "boshiamy", "cangjie", "taijima"
 "            * support "pinyin" plus 6 "shuangpin" plus "digit filter"
-"            * support direct "UNICODE"/"GBK"/"Big5" input
-"            * It is independent of OS and mbyte-XIM/mbyte-IME API.
+"            * support direct internal code (UNICODE/GBK/Big5) input
+" -----------------------------------------------------------
+" "VimIM Design Goal"
+"  (1) Chinese can be searched using Vim without menu
+"  (2) Chinese can be input using Vim regardless of encoding and OS
+"  (3) No negative impact to Vim when VimIM is not used
+"  (4) No compromise for high speed and low memory usage
+" -----------------------------------------------------------
+" "VimIM Front End UI"
+"  (1) VimIM OneKey: Chinese input without mode change.
+"  (2) VimIM Chinese Input Mode: ['dynamic','static']
+"  (3) VimIM auto Chinese input with zero configuration
+" -----------------------------------------------------------
+" "VimIM Back End Engine"
+"  (1) [external] myCloud: http://pim-cloud.appspot.com
+"  (2) [external]   Cloud: http://web.pinyin.sogou.com
+"  (3) [embedded] VimIM:   http://vimim.googlecode.com
+"      (3.1) a datafile:   $VIM/vimfiles/plugin/vimim.pinyin.txt
+"      (3.2) a directory:  $VIM/vimfiles/plugin/vimim/pinyin/
+"  -----------------------------------------------------------
+" "VimIM Installation"
+"  (1) drop this file to plugin/:  plugin/vimim.vim
+"  (2) [option] drop a datafile:   plugin/vimim.pinyin.txt
+"  (3) [option] drop a directory:  plugin/vimim/pinyin/
 " -----------------------------------------------------------
 
 let s:vimims = [VimIM]
-" ======================================== }}}
-let VimIM = " ====  Introduction      ==== {{{"
-" ============================================
-call add(s:vimims, VimIM)
-
-" -------------------
-" "VimIM Design Goal"
-" -------------------
-" # Chinese can be searched using Vim without menu
-" # Chinese can be input using Vim regardless of encoding
-" # Chinese can be input using Vim without local datafile
-" # No negative impact to Vim when VimIM is not used
-" # No compromise for high speed and low memory usage
-
-" --------------------
-" "VimIM Front End UI"
-" --------------------
-" # VimIM "OneKey": Chinese input without mode change.
-" # VimIM "Chinese Input Mode" ['dynamic','static']
-" # VimIM auto Chinese input with zero configuration
-
-" -----------------------
-" "VimIM Back End Engine"
-" -----------------------
-" # (1) [external] myCloud: http://pim-cloud.appspot.com
-" # (2) [external] Cloud:   http://web.pinyin.sogou.com
-" # (3) [embedded] VimIM:   http://vimim.googlecode.com
-" #     (3.1) a datafile:  $VIM/vimfiles/plugin/vimim.pinyin.txt
-" #     (3.2) a directory: $VIM/vimfiles/plugin/vimim/pinyin/
-
-" --------------------
-" "VimIM Installation"
-" --------------------
-" # (1) drop this file to plugin/: plugin/vimim.vim
-" # (2) [option] drop a datafile:  plugin/vimim.pinyin.txt
-" # (3) [option] drop a directory: plugin/vimim/pinyin/
-
 " ======================================== }}}
 let VimIM = " ====  Initialization    ==== {{{"
 " ============================================
@@ -104,10 +77,10 @@ function! s:vimim_frontend_initialization()
     sil!call s:vimim_initialize_keycode()
     sil!call s:vimim_set_special_im_property()
     sil!call s:vimim_initialize_frontend_punctuation()
-    sil!call s:vimim_build_digit_filter_lines()
+    sil!call s:vimim_build_digit_filter_cache()
     sil!call s:vimim_build_datafile_lines()
     sil!call s:vimim_localization()
-        call s:vimim_initialize_skin()
+    sil!call s:vimim_initialize_skin()
 endfunction
 
 " ---------------------------------------------
@@ -167,16 +140,13 @@ function! s:vimim_initialize_session()
     let s:shuangpin_keycode_chinese = {}
     let s:shuangpin_table = {}
     let s:quanpin_table = {}
-    " --------------------------------
-    let s:unihan_4corner_lines = []
     let s:unihan_4corner_cache = {}
     let s:pinyin_4corner_filter = 0
     let s:xingma = ['wubi', 'erbi', '4corner']
     " --------------------------------
-    let s:abcd = "'abcdefg"
-    let s:pqwertyuio = range(10)
+    let s:abcd = "'abcdefgz"
+    let s:qwerty = range(10)
     let s:quantifiers = {}
-    let s:valid_key = 0
     let s:localization = 0
     let s:tail = ""
     " --------------------------------
@@ -187,6 +157,7 @@ function! s:vimim_initialize_session()
     let s:start_row_before = 0
     let s:start_column_before = 1
     let s:scriptnames_output = 0
+    let s:popupmenu_list = []
     " --------------------------------
     let A = char2nr('A')
     let Z = char2nr('Z')
@@ -197,9 +168,10 @@ function! s:vimim_initialize_session()
     let s:az_list = map(range(a,z),"nr2char(".'v:val'.")")
     let s:AZ_list = map(range(A,Z),"nr2char(".'v:val'.")")
     " --------------------------------
-    let s:debugs = []
+    let s:valid_key = 0
+    let s:valid_keys = s:az_list
     let s:debug_count = 0
-    " -----------------------------------
+    let s:debugs = []
 endfunction
 
 " -------------------------------
@@ -332,8 +304,8 @@ function! s:vimim_initialize_keycode()
         let keycode = s:shuangpin_keycode_chinese.keycode
     endif
     let s:valid_key = copy(keycode)
-    let keycode = s:vimim_expand_character_class(keycode)
-    let s:valid_keys = split(keycode, '\zs')
+    let keycode_real = s:vimim_expand_character_class(keycode)
+    let s:valid_keys = split(keycode_real, '\zs')
 endfunction
 
 " ======================================== }}}
@@ -351,6 +323,8 @@ function! s:vimim_initialize_global()
     call add(G, "g:vimim_ctrl_space_to_toggle")
     call add(G, "g:vimim_tab_as_onekey")
     call add(G, "g:vimim_data_directory")
+    call add(G, "g:vimim_private_data_directory")
+    call add(G, "g:vimim_private_data_file")
     call add(G, "g:vimim_data_file")
     call add(G, "g:vimim_vimimdata")
     call add(G, "g:vimim_libvimdll")
@@ -371,17 +345,14 @@ function! s:vimim_initialize_global()
     call add(G, "g:vimim_custom_skin")
     call add(G, "g:vimim_search_next")
     call add(G, "g:vimim_chinese_punctuation")
-    call add(G, "g:vimim_onekey_double_ctrl6")
     " -----------------------------------
     call s:vimim_set_global_default(G, 1)
     " -----------------------------------
     let s:backend_loaded = 0
-    let s:path2 = s:vimim_data_directory
     let s:chinese_input_mode = "onekey"
     if empty(s:vimim_chinese_input_mode)
         let s:vimim_chinese_input_mode = "dynamic"
     endif
-    " -----------------------------------
 endfunction
 
 " ----------------------------------------------------
@@ -450,13 +421,12 @@ function! s:vimim_egg_vimimhelp()
 " -------------------------------
     let eggs = []
     " ---------------------------------------------------
-    call add(eggs, "错误报告" . s:colon . s:vimimhelp[0])
-    call add(eggs, "官方网址" . s:colon . s:vimimhelp[1])
-    call add(eggs, "民间词库" . s:colon . s:vimimhelp[2])
-    call add(eggs, "自己的云" . s:colon . s:vimimhelp[3])
-    call add(eggs, "新闻论坛" . s:colon . s:vimimhelp[4])
-    call add(eggs, "最新主页" . s:colon . s:vimimhelp[5])
-    call add(eggs, "最新程式" . s:colon . s:vimimhelp[6])
+    call add(eggs, "官方网址" . s:colon . s:vimimhelp[0])
+    call add(eggs, "民间词库" . s:colon . s:vimimhelp[1])
+    call add(eggs, "新闻论坛" . s:colon . s:vimimhelp[2])
+    call add(eggs, "最新主页" . s:colon . s:vimimhelp[3])
+    call add(eggs, "最新程式" . s:colon . s:vimimhelp[4])
+    call add(eggs, "错误报告" . s:colon . s:vimimhelp[5])
     " ---------------------------------------------------
     return map(eggs, '"VimIM " . v:val . s:space')
 endfunction
@@ -527,7 +497,7 @@ function! s:vimim_egg_vimim()
     elseif s:vimim_tab_as_onekey == 2
         let toggle = "Tab_as_OneKey_with_NonStop_hjkl"
     endif
-    let toggle .=  s:space
+    let toggle .= s:space
     let style = s:vimim_chinese('style')
     let option = "mode\t " . style . s:colon . toggle
     call add(eggs, option)
@@ -543,7 +513,7 @@ function! s:vimim_egg_vimim()
     if !empty(option)
         if s:ui.root == 'directory'
             let directory  = s:vimim_chinese('directory')
-            let ciku .=  directory . ciku
+            let ciku .= directory . ciku
             let option .= "/"
         endif
         let ciku = "database " . ciku
@@ -553,13 +523,12 @@ function! s:vimim_egg_vimim()
     " ----------------------------------
     let option = 0
     if s:pinyin_4corner_filter == 2
-        if !empty(s:path2)
-            let option = ciku . s:path2 . "unihan/"
+        if !empty(s:vimim_data_directory)
+            let option = ciku . s:vimim_data_directory . "unihan/"
         endif
     elseif s:pinyin_4corner_filter == 1
-        let option = s:path . "vimim.unihan_4corner.txt"
-        let ciku = s:vimim_chinese('digit') . s:colon
-        let option = "database " . ciku . option
+        let ciku = "database " . s:vimim_chinese('digit') . s:colon
+        let option = ciku . s:path . "vimim.unihan_4corner.txt"
     endif
     if !empty(option)
         call add(eggs, option)
@@ -604,9 +573,7 @@ function! s:vimim_easter_chicken(keyboard)
     try
         return eval("<SID>vimim_egg_".egg."()")
     catch
-        if s:vimimdebug > 0
-            call s:debugs('egg::exception=', v:exception)
-        endif
+        call s:debugs('egg::exception=', v:exception)
         return []
     endtry
 endfunction
@@ -712,23 +679,17 @@ function! s:vimim_register_search_pattern(english, results)
     endif
 endfunction
 
-" -------------------------------------------
+" --------------------------------------------
 function! s:vimim_get_unicodes(unicodes, more)
-" -------------------------------------------
+" --------------------------------------------
     let unicodes = a:unicodes
     if empty(unicodes) || empty(get(unicodes,0))
         return []
     endif
     let results = []
     for ddddd in unicodes
-        if s:encoding == "utf8"
-            if ddddd < 19968 || ddddd > 40869
-                break
-            endif
-        endif
         let menu = s:vimim_unicode_4corner_pinyin(ddddd, a:more)
-        let chinese = nr2char(ddddd)
-        let menu_chinese = menu .' '. chinese
+        let menu_chinese = menu .' '. nr2char(ddddd)
         call add(results, menu_chinese)
     endfor
     return results
@@ -737,17 +698,18 @@ endfunction
 " ---------------------------------------------------
 function! s:vimim_unicode_4corner_pinyin(ddddd, more)
 " ---------------------------------------------------
-    let hex = printf('u%04x', a:ddddd)
-    let menu = s:space . hex . s:space . a:ddddd
+    let menu = printf('u%04x',a:ddddd) . s:space . a:ddddd
     if a:more > 0 && s:pinyin_4corner_filter > 0
         let chinese = nr2char(a:ddddd)
         call s:vimim_build_unihan_reverse_cache(chinese)
         let unihan = get(s:vimim_reverse_one_entry(chinese,'unihan'),0)
         let pinyin = get(s:vimim_reverse_one_entry(chinese,'pinyin'),0)
-        if empty(pinyin)
-            let pinyin = s:space
+        if empty(unihan) && empty(pinyin)
+            let msg = 'no need to print out sparse matrix'
+        else
+            let menu .= s:space . unihan
+            let menu .= s:space . pinyin
         endif
-        let menu .= s:space . unihan . s:space . pinyin
     endif
     return menu
 endfunction
@@ -817,9 +779,20 @@ function! <SID>OneKey()
 " (1) <OneKey> => start OneKey as "hit and run"
 " (2) <OneKey> => stop  OneKey and print out menu
 " -----------------------------------------------
-    sil!call s:vimim_start_onekey()
-    let action = s:vimim_onekey_action("")
-    sil!exe 'sil!return "' . action . '"'
+    let onekey = -1
+    let byte_before = getline(".")[col(".")-2]
+    if empty(byte_before) || byte_before =~ '\s'
+        if s:vimim_tab_as_onekey > 0
+            let onekey = "\t"
+        else
+            let onekey = ""
+        endif
+    endif
+    if onekey < 0
+        sil!call s:vimim_start_onekey()
+        let onekey = s:vimim_onekey_action("")
+    endif
+    sil!exe 'sil!return "' . onekey . '"'
 endfunction
 
 " ------------------------------
@@ -869,11 +842,9 @@ function! s:vimim_onekey_action(onekey)
         if s:pattern_not_found > 0
             let s:pattern_not_found = 0
             let onekey = " "
-        elseif s:vimim_onekey_double_ctrl6
-            let onekey  = '\<C-R>=g:vimim_pumvisible_ctrl_ee()\<CR>'
-            let onekey .= '\<C-R>=g:vimim_pumvisible_dump()\<CR>'
         else
-            let onekey = "\<C-E>"
+            let onekey  = '\<C-R>=g:vimim_pumvisible_ctrl_e()\<CR>'
+            let onekey .= '\<C-R>=g:vimim_pumvisible_dump()\<CR>'
         endif
         sil!exe 'sil!return "' . onekey . '"'
     endif
@@ -881,10 +852,10 @@ function! s:vimim_onekey_action(onekey)
         let s:insert_without_popup = 0
     endif
     " ---------------------------------------------------
-    let byte_before = getline(".")[col(".")-2]
+    let before = getline(".")[col(".")-2]
     let char_before_before = getline(".")[col(".")-3]
     if char_before_before !~# "[0-9A-z]"
-    \&& has_key(s:punctuations, byte_before)
+    \&& has_key(s:punctuations, before)
     \&& empty(s:ui.has_dot)
         for char in keys(s:punctuations_all)
             if char_before_before ==# char
@@ -896,25 +867,17 @@ function! s:vimim_onekey_action(onekey)
         endfor
         if empty(onekey)
             let msg = "transform punctuation from english to chinese"
-            let replacement = s:punctuations[byte_before]
+            let replacement = s:punctuations[before]
             let onekey = "\<BS>" . replacement
             sil!exe 'sil!return "' . onekey . '"'
         endif
     endif
     " -------------------------------------------------
-    let onekey = a:onekey
-    if byte_before !~# s:valid_key
-        if empty(byte_before) || byte_before =~ '\s'
-            if s:vimim_tab_as_onekey > 0
-                let onekey = "\t"
-            endif
-        elseif empty(a:onekey)
-        \&& match(s:valid_keys,'\d') > -1
-            return s:vimim_get_unicode_menu()
-        endif
+    if before !~# s:valid_key && empty(a:onekey)
+        return s:vimim_get_unicode_menu()
     endif
     " ---------------------------------------------------
-    if byte_before ==# "'" && empty(s:ui.has_dot)
+    if before ==# "'" && empty(s:ui.has_dot)
         let s:pattern_not_found = 0
     endif
     " ---------------------------------------------------
@@ -925,13 +888,7 @@ function! s:vimim_onekey_action(onekey)
         let onekey = ""
     endif
     " ---------------------------------------------------
-    if empty(byte_before) || byte_before =~ '\s'
-        if s:vimim_tab_as_onekey > 0
-            let onekey = "\t"
-        else
-            let onekey = a:onekey
-        endif
-    elseif byte_before !~# s:valid_key
+    if empty(before) || before =~ '\s' || before !~# s:valid_key
         let onekey = a:onekey
     endif
     " ---------------------------------------------------
@@ -943,32 +900,19 @@ endfunction
 " -----------------------------------------
 function! s:vimim_get_unicode_char_before()
 " -----------------------------------------
-    let xxxx = 0
+" [unicode] OneKey to trigger Chinese with omni menu"
     let byte_before = getline(".")[col(".")-2]
     if empty(byte_before) || byte_before =~# s:valid_key
         return 0
     endif
-    let msg = "[unicode] OneKey to trigger Chinese with omni menu"
     let start = s:multibyte + 1
     let char_before = getline(".")[col(".")-start : col(".")-2]
     let ddddd = char2nr(char_before)
+    let xxxx = 0
     if ddddd > 127
-        let xxxx = s:vimim_decimal2hex(ddddd)
-        let xxxx = 'u' . xxxx
+        let xxxx = printf('u%04x', ddddd)
     endif
     return xxxx
-endfunction
-
-" ------------------------------------
-function! s:vimim_decimal2hex(decimal)
-" ------------------------------------
-    let n = a:decimal
-    let hex = ""
-    while n
-        let hex = '0123456789abcdef'[n%16].hex
-        let n = n/16
-    endwhile
-    return hex
 endfunction
 
 " ======================================== }}}
@@ -986,6 +930,7 @@ function! <SID>ChineseMode()
 " --------------------------
     call s:vimim_backend_initialization_once()
     call s:vimim_frontend_initialization()
+    call s:vimim_initialize_statusline()
     call s:vimim_build_datafile_cache()
     let s:chinese_input_mode = s:vimim_chinese_input_mode
     let action = ""
@@ -1119,12 +1064,16 @@ function! s:vimim_get_seamless(current_positions)
     if empty(len(snip))
         return -1
     endif
-    let snips = split(snip, '\zs')
-    for char in snips
-        if char !~# s:valid_key
-            return -1
-        endif
-    endfor
+    if snip =~# 'u\x\x\x\x'
+        let meg = 'support onekey after CJK'
+    else
+        let snips = split(snip, '\zs')
+        for char in snips
+            if char !~# s:valid_key
+                return -1
+            endif
+        endfor
+    endif
     let s:start_row_before = seamless_lnum
     let s:smart_enter = 0
     return seamless_column
@@ -1138,39 +1087,32 @@ call add(s:vimims, VimIM)
 " ---------------------------------
 function! s:vimim_initialize_skin()
 " ---------------------------------
-    if s:vimim_custom_skin < 0
-        return
-    endif
-    if s:vimim_custom_skin < 3
-        set laststatus=2
-        sil!call s:vimim_set_statusline()
-    else
-        echoh NonText | echo s:vimim_statusline() | echohl None
-    endif
     if s:vimim_custom_skin > 1
-        " ------------------------------
         highlight! link PmenuSel   Title
         highlight! link StatusLine Title
         highlight!      Pmenu      NONE
         highlight!      PmenuSbar  NONE
         highlight!      PmenuThumb NONE
-        " ------------------------------
     endif
 endfunction
 
-" ------------------------------------
-function! s:vimim_cursor_color(switch)
-" ------------------------------------
-    if empty(a:switch)
-        highlight! Cursor guifg=bg guibg=fg
+" ---------------------------------------
+function! s:vimim_initialize_statusline()
+" ---------------------------------------
+    if s:vimim_custom_skin < 0
+        return
+    endif
+    if s:vimim_custom_skin < 3
+        sil!call s:vimim_set_statusline()
     else
-        highlight! Cursor guifg=bg guibg=Green
+        echoh NonText | echo s:vimim_statusline() | echohl None
     endif
 endfunction
 
 " --------------------------------
 function! s:vimim_set_statusline()
 " --------------------------------
+    set laststatus=2
     if empty(&statusline)
         set statusline=%<%f\ %h%m%r%=%-14.(%l,%c%V%)\ %P%{IMName()}
     elseif &statusline =~ 'IMName'
@@ -1179,6 +1121,18 @@ function! s:vimim_set_statusline()
         let &statusline .= '.IMName()'
     else
         let &statusline .= '%{IMName()}'
+    endif
+endfunction
+
+" ------------------------------------
+function! s:vimim_cursor_color(switch)
+" ------------------------------------
+    if empty(a:switch)
+        set ruler
+        highlight! Cursor  guifg=bg   guibg=fg
+    else
+        set noruler
+        highlight! Cursor  guifg=bg   guibg=green
     endif
 endfunction
 
@@ -1251,7 +1205,9 @@ endfunction
 function! s:vimim_get_chinese_im()
 " --------------------------------
     let input_style = s:vimim_chinese('classic')
-    if s:vimim_chinese_input_mode =~ 'dynamic'
+    if s:chinese_input_mode =~ 'onekey' && s:vimim_tab_as_onekey > 0
+        let input_style = s:vimim_chinese('onekey')
+    elseif s:vimim_chinese_input_mode =~ 'dynamic'
         let input_style .= s:vimim_chinese('dynamic')
     elseif s:vimim_chinese_input_mode =~ 'static'
         let input_style .= s:vimim_chinese('static')
@@ -1263,7 +1219,7 @@ endfunction
 " --------------------------
 function! s:vimim_label_on()
 " --------------------------
-    let labels = range(8)
+    let labels = range(9)
     if &pumheight > 0
         let labels = range(1, &pumheight)
     endif
@@ -1319,18 +1275,12 @@ endfunction
 " --------------------------------------------
 function! s:vimim_onekey_label_navigation_on()
 " --------------------------------------------
-    let hjkl = 'hjklmnsxv'
+    let hjkl = 'hjklmnsx'
     let hjkl_list = split(hjkl, '\zs')
-    " ---------------------------------
-    if empty(s:pinyin_4corner_filter)
-        call extend(hjkl_list, ['p'])
-    endif
-    " ---------------------------------
     for _ in hjkl_list
         sil!exe 'inoremap <silent> <expr> '._.'
         \ <SID>vimim_onekey_label_navigation("'._.'")'
     endfor
-    " ---------------------------------
 endfunction
 
 " --------------------------------
@@ -1339,7 +1289,7 @@ function! s:vimim_onekey_nonstop()
     if s:chinese_input_mode == 'onekey'
         let s:onekeynonstop = 1
         call s:vimim_cursor_color(1)
-        call s:reset_popupmenu_list()
+        call s:reset_matched_list()
     endif
 endfunction
 
@@ -1348,16 +1298,16 @@ function! <SID>vimim_onekey_label_navigation(key)
 " -----------------------------------------------
     let hjkl = a:key
     if pumvisible()
-        if a:key == 'h'
-            sil!call s:vimim_onekey_nonstop()
-            let hjkl  = s:vimim_ctrl_e_ctrl_x_ctrl_u()
-        elseif a:key == 'j'
+        if a:key == 'j'
             let hjkl  = '\<Down>'
         elseif a:key == 'k'
             let hjkl  = '\<Up>'
+        elseif a:key == 'h'
+            sil!call s:vimim_onekey_nonstop()
+            let hjkl  = s:vimim_ctrl_e_ctrl_x_ctrl_u()
         elseif a:key == 'l'
             sil!call s:vimim_onekey_nonstop()
-            let hjkl = "\<C-Y>"
+            let hjkl  = s:vimim_ctrl_y_ctrl_x_ctrl_u()
         elseif a:key == 'm'
             let hjkl  = '\<C-E>'
         elseif a:key == 'n'
@@ -1369,12 +1319,6 @@ function! <SID>vimim_onekey_label_navigation(key)
             let s:pumvisible_ctrl_e = 1
             let hjkl  = '\<C-R>=g:vimim_pumvisible_ctrl_e()\<CR>'
             let hjkl .= '\<C-R>=g:vimim_backspace()\<CR>'
-        elseif a:key == 'v'
-            let s:pumvisible_hjkl_2nd_match = 1
-            let hjkl  = s:vimim_ctrl_e_ctrl_x_ctrl_u()
-        elseif a:key == 'p'
-            let hjkl  = '\<C-R>=g:vimim_pumvisible_ctrl_ee()\<CR>'
-            let hjkl .= "\<C-R>=g:vimim_pumvisible_dump()\<CR>"
         endif
     endif
     sil!exe 'sil!return "' . hjkl . '"'
@@ -1384,7 +1328,7 @@ endfunction
 function! g:vimim_one_key_correction()
 " ------------------------------------
     let key = '\<Esc>'
-    call s:reset_popupmenu_list()
+    call s:reset_matched_list()
     let byte_before = getline(".")[col(".")-2]
     if byte_before =~# s:valid_key
         let s:one_key_correction = 1
@@ -1396,7 +1340,7 @@ endfunction
 " ---------------------
 function! g:vimim_esc()
 " ---------------------
-    call s:reset_popupmenu_list()
+    call s:reset_matched_list()
     if s:chinese_input_mode == 'onekey'
         call s:vimim_stop()
     endif
@@ -1423,25 +1367,29 @@ function! g:vimim_pumvisible_dump()
     endif
     let line = ""
     let one_line = ""
-    let results = [s:keyboard_leading_zero]
+    let results = []
     " -----------------------------
     for items in s:popupmenu_list
         if empty(items.menu)
             let line = printf('%s', items.word)
         else
-            let line = printf('%-8s %s', items.menu, items.word)
+            let format = '%-8s %s'
+            if s:pinyin_4corner_filter > 0
+            \&& items.menu =~ '^u\x\x\x\x'
+            \&& len(split(items.menu)) > 2
+                let format = '%-32s %s'
+            endif
+            let line = printf(format, items.menu, items.word)
         endif
         call add(results, line)
         let one_line .= line . "\n"
     endfor
     " -----------------------------
-    let line = line(".")
-    call setline(line, results)
-    " -----------------------------
     if has("gui_running") && has("win32")
         let @+ = one_line
     endif
     " -----------------------------
+    call setline(line("."), results)
     return g:vimim_esc()
 endfunction
 
@@ -1463,6 +1411,12 @@ endfunction
 function! s:vimim_ctrl_e_ctrl_x_ctrl_u()
 " --------------------------------------
     return '\<C-E>\<C-R>=g:vimim()\<CR>'
+endfunction
+
+" --------------------------------------
+function! s:vimim_ctrl_y_ctrl_x_ctrl_u()
+" --------------------------------------
+    return '\<C-Y>\<C-R>=g:vimim()\<CR>'
 endfunction
 
 " -------------------------------------
@@ -1580,7 +1534,6 @@ function! <SID>vimim_smart_enter()
             let key = enter
         endif
     endif
-    " -----------------------------------------------
     if s:smart_enter == 1
         let msg = "do seamless for the first time <Enter>"
         let s:pattern_not_found = 0
@@ -1594,13 +1547,11 @@ function! <SID>vimim_smart_enter()
         endif
         let s:smart_enter = 0
     endif
-    " -----------------------------------------------
     if s:chinese_input_mode == 'onekey'
         if empty(byte_before)
             let key = s:space . enter
         endif
     endif
-    " -----------------------------------------------
     sil!exe 'sil!return "' . key . '"'
 endfunction
 
@@ -1609,11 +1560,13 @@ function! s:vimim_get_unicode_menu()
 " ----------------------------------
     let trigger = '\<C-R>=g:vimim()\<CR>'
     let xxxx = s:vimim_get_unicode_char_before()
-    if !empty(xxxx)
+    if empty(xxxx)
+        let trigger = ""
+    else
+        call <SID>vimim_set_seamless()
         let trigger = xxxx . trigger
-        sil!exe 'sil!return "' . trigger . '"'
     endif
-    return ""
+    sil!exe 'sil!return "' . trigger . '"'
 endfunction
 
 " -----------------------------------
@@ -1637,18 +1590,6 @@ function! g:vimim_pumvisible_ctrl_e()
     sil!exe 'sil!return "' . key . '"'
 endfunction
 
-" ------------------------------------
-function! g:vimim_pumvisible_ctrl_ee()
-" ------------------------------------
-    let key = ""
-    if pumvisible()
-        let key  = "\<C-E>"
-        let key .= '\<C-R>=g:vimim()\<CR>'
-        let key .= "\<C-E>"
-    endif
-    sil!exe 'sil!return "' . key . '"'
-endfunction
-
 " --------------------------------------
 function! g:vimim_pumvisible_ctrl_e_on()
 " --------------------------------------
@@ -1661,21 +1602,18 @@ endfunction
 " ---------------------------
 function! g:vimim_backspace()
 " ---------------------------
-    call s:reset_popupmenu_list()
+    call s:reset_matched_list()
     let s:pattern_not_found = 0
     let key = '\<BS>'
-    " ---------------------------------
     if s:pumvisible_ctrl_e > 0
         let s:pumvisible_ctrl_e = 0
         let key .= '\<C-R>=g:vimim()\<CR>'
         sil!exe 'sil!return "' . key . '"'
     endif
-    " ---------------------------------
     if empty(s:onekeynonstop)
-    \&& s:chinese_input_mode == 'onekey'
+    \&& s:chinese_input_mode =~ 'onekey'
         call s:vimim_stop()
     endif
-    " ---------------------------------
     sil!exe 'sil!return "' . key . '"'
 endfunction
 
@@ -1684,10 +1622,28 @@ let VimIM = " ====  Omni_Popup_Menu   ==== {{{"
 " ============================================
 call add(s:vimims, VimIM)
 
+" ----------------------------------------
+function! s:vimim_get_previous_pair_list()
+" ----------------------------------------
+    let results = []
+    let filter = s:menu_digit_as_filter
+    let filter = strpart(filter, 0, len(filter)-1)
+    if len(filter) > 0
+        let s:menu_digit_as_filter = filter
+        let results = s:vimim_pair_list(s:matched_list)
+    endif
+    return results
+endfunction
+
 " ---------------------------------------
 function! s:vimim_pair_list(matched_list)
 " ---------------------------------------
     let pair_matched_list = []
+    if !empty(len(s:menu_digit_as_filter))
+        let chinese = join(a:matched_list,'')
+        let chinese = substitute(chinese,'\s\|\w','','g')
+        call s:vimim_build_unihan_reverse_cache(chinese)
+    endif
     for line in a:matched_list
         if len(line) < 2
             continue
@@ -1700,7 +1656,9 @@ function! s:vimim_pair_list(matched_list)
         let oneline_list = split(line)
         let menu = remove(oneline_list, 0)
         for chinese in oneline_list
-            let chinese = s:vimim_digit_filter(chinese)
+            if s:pinyin_4corner_filter > 0
+                let chinese = s:vimim_digit_filter(chinese)
+            endif
             if !empty(chinese)
                 call add(pair_matched_list, menu .' '. chinese)
             endif
@@ -1752,11 +1710,11 @@ function! s:vimim_popupmenu_list(pair_matched_list)
             if keyboard =~ "[']"
                 let word_by_word = match(keyboard, "[']")
                 let s:tail = strpart(keyboard, word_by_word+1)
-                let chinese .=  s:tail
+                let chinese .= s:tail
             elseif keyboard !~? '^vim'
                 let s:tail = strpart(keyboard, len(menu))
                 if keyboard =~ '\l\>' || keyboard =~ '^\d\+\>'
-                    let chinese .=  s:tail
+                    let chinese .= s:tail
                 endif
             endif
             let s:keyboard_head = strpart(keyboard, 0, len(menu))
@@ -1767,12 +1725,10 @@ function! s:vimim_popupmenu_list(pair_matched_list)
         let labeling = s:vimim_get_labeling(label)
         let abbr = printf('%2s',labeling)."\t".chinese
         let complete_items["abbr"] = abbr
-        " -------------------------------------------------
         let complete_items["word"] = chinese
         let complete_items["dup"] = 1
         let label += 1
         call add(popupmenu_list, complete_items)
-        " -------------------------------------------------
     endfor
     let s:popupmenu_list = copy(popupmenu_list)
     return popupmenu_list
@@ -1784,17 +1740,15 @@ function! s:vimim_get_labeling(label)
     let label = a:label
     let labeling = label
     if s:chinese_input_mode =~ 'onekey'
-        if label < &pumheight+1
-            let label2 = s:abcd[label-1 : label-1]
-            if label < 2
-                let label2 = "_"
-            endif
-            if s:vimim_custom_skin == 3
-            \|| s:pinyin_4corner_filter > 0
-                let labeling = label2
-            else
-                let labeling .= label2
-            endif
+    \&& label < &pumheight+1
+        let label2 = s:abcd[label-1 : label-1]
+        if label < 2
+            let label2 = "_"
+        endif
+        if s:vimim_custom_skin == 3 || s:pinyin_4corner_filter > 0
+            let labeling = label2
+        else
+            let labeling .= label2
         endif
     endif
     return labeling
@@ -1850,8 +1804,7 @@ function! s:vimim_initialize_frontend_punctuation()
 " -------------------------------------------------
     for char in s:valid_keys
         if has_key(s:punctuations, char)
-            if !empty(s:vimim_cloud_plugin)
-            \|| s:ui.has_dot == 1
+            if !empty(s:vimim_cloud_plugin) || s:ui.has_dot == 1
                 unlet s:punctuations[char]
             elseif char !~# "[*.']"
                 unlet s:punctuations[char]
@@ -1946,7 +1899,7 @@ function! s:vimim_punctuation_navigation_on()
         return
     endif
     let dot = "."
-    let punctuation = "=-[]"
+    let punctuation = "=-[]<"
     if s:chinese_input_mode =~ 'onekey'
         let punctuation .= dot . ",/?"
     endif
@@ -1981,6 +1934,9 @@ function! <SID>vimim_punctuations_navigation(key)
             let hjkl  = '\<C-R>=g:vimim_menu_search_backward()\<CR>'
         elseif a:key =~ "[-,=.]"
             let hjkl = s:vimim_pageup_pagedown(a:key)
+        elseif a:key == '<'
+            let s:pumvisible_hjkl_2nd_match = 1
+            let hjkl  = s:vimim_ctrl_e_ctrl_x_ctrl_u()
         endif
     else
         if s:chinese_input_mode !~ 'onekey'
@@ -2144,7 +2100,7 @@ let VimIM = " ====  Input_Digit       ==== {{{"
 call add(s:vimims, VimIM)
 
 " ------------------------------------------
-function! s:vimim_build_digit_filter_lines()
+function! s:vimim_build_digit_filter_cache()
 " ------------------------------------------
 " Digit code such as four corner can be used as independent filter.
 " It works for both cloud and VimIM embedded backends.
@@ -2153,14 +2109,21 @@ function! s:vimim_build_digit_filter_lines()
     let buffer = expand("%:p:t")
     if s:chinese_input_mode !~ 'onekey'
     \|| buffer =~ 'dynamic' || buffer =~ 'static'
-        let msg = 'digit filter for onekey only'
+        let msg = 'digit filter is used for onekey only'
         return
     endif
-    let datafile = s:path . "vimim.unihan_4corner.txt"
-    if filereadable(datafile) && empty(s:unihan_4corner_lines)
-        let s:vimim_chinese_input_mode = 'onekey'
+    let unihan_4corner_file = s:path . "vimim.unihan_4corner.txt"
+    if filereadable(unihan_4corner_file)
+    \&& empty(s:unihan_4corner_cache)
+    \&& empty(s:vimim_data_directory)
+        " in:  ['u808f 8022', 'u808f cao4']
+        " out: {'u808f': ['8022', 'cao4']}
+        for line in readfile(unihan_4corner_file)
+            let oneline_list = split(line)
+            let menu = remove(oneline_list, 0)
+            let s:unihan_4corner_cache[menu] = oneline_list
+        endfor
         let s:pinyin_4corner_filter = 1
-        let s:unihan_4corner_lines = readfile(datafile)
     endif
 endfunction
 
@@ -2168,22 +2131,26 @@ endfunction
 function! <SID>vimim_visual_ctrl_6(keyboard)
 " ------------------------------------------
 " [input]     马力 (visual mode)
-" [output]    7712 4002   --  four corner
-"             马   力
-"             9a6c 529b   --  unicode
-"             马   力
-"             ma3  li4    --  pinyin
-"             马   力
-"             ml 马力     --  cjjp
+" [output]    7712 4002  --  four corner
+"             9a6c 529b  --  unicode
+"             ma3  li4   --  pinyin
+"             ml 马力    --  cjjp
 " ------------------------------------------
+    let keyboard = a:keyboard
     let range = line("'>") - line("'<")
     if empty(range)
         call s:vimim_backend_initialization_once()
-        let results = s:vimim_reverse_lookup(a:keyboard)
-        if !empty(results)
-            call s:vimim_visual_ctrl_6_output(results)
+        if keyboard =~ '\s'
+            if !empty(s:vimim_data_directory)
+                call s:vimim_visual_ctrl_6_update()
+            endif
+        else
+            let results = s:vimim_reverse_lookup(keyboard)
+            if !empty(results)
+                call s:vimim_visual_ctrl_6_output(results)
+            endif
         endif
-    else
+    elseif s:vimim_tab_as_onekey > 0
         call s:vimim_numberList()
     endif
 endfunction
@@ -2197,6 +2164,40 @@ function! s:vimim_numberList() range
         call setline(z, pre . x . "\t" . getline(z))
         let z=z-1|let x=x-1
     endwhile
+endfunction
+
+" --------------------------------------
+function! s:vimim_visual_ctrl_6_update()
+" --------------------------------------
+" purpose: update one entry to the directory database
+" input example (one line, within vim): cjjp 超级简拼
+" action: (1) cursor on space (2) v (3) ctrl_6
+" result: (1) confirm or create new file based on the "left": cjjp
+"         (2) update content, with the "right" as the first line
+    let current_line = getline(".")
+    let fields = split(current_line)
+    let left = get(fields,0)
+    let right = get(fields,1)
+    if left =~# '\l' && left !~ '\W' && right =~# '\W' && right !~ '\l'
+        let dir = s:vimim_data_directory . "pinyin"
+        let lines = [current_line]
+        call s:vimim_mkdir('prepend', dir, lines)
+        call s:vimim_append_to_datafile()
+    endif
+endfunction
+
+" ------------------------------------
+function! s:vimim_append_to_datafile()
+" ------------------------------------
+    let datafile = s:vimim_private_data_file
+    if empty(datafile)
+        return
+    endif
+    if filereadable(datafile)
+        let lines = readfile(datafile)
+        call add(lines, getline("."))
+        call writefile(lines, s:vimim_private_data_file)
+    endif
 endfunction
 
 " ---------------------------------------------
@@ -2218,23 +2219,20 @@ function! s:vimim_reverse_lookup(chinese)
     if empty(chinese)
         return []
     endif
-    " -----------------------------------
     let results_unicode = []  |" 马力 => u9a6c u529b
+    let results_digit = []    |" 马力 => 7712 4002
+    let results_pinyin = []   |" 马力 => ma3 li2
+    let result_cjjp = ""      |" 马力 => ml
     let items = s:vimim_reverse_one_entry(chinese, 'unicode')
     call add(results_unicode, get(items,0))
     call add(results_unicode, get(items,1))
-    " -----------------------------------
-    call s:vimim_build_unihan_reverse_cache(chinese)
-    let results_digit = []  |" 马力 => 7712 4002
+    if s:pinyin_4corner_filter > 0
+        call s:vimim_build_unihan_reverse_cache(chinese)
+    endif
     if len(s:unihan_4corner_cache) > 1
         let items = s:vimim_reverse_one_entry(chinese, 'unihan')
         call add(results_digit, get(items,0))
         call add(results_digit, get(items,1))
-    endif
-    " -----------------------------------
-    let results_pinyin = []   |" 马力 => ma3 li2
-    let result_cjjp = ""      |" 马力 => ml
-    if len(s:unihan_4corner_cache) > 1
         let items = s:vimim_reverse_one_entry(chinese, 'pinyin')
         if len(items) > 0
             let pinyin_head = get(items,0)
@@ -2265,6 +2263,26 @@ function! s:vimim_reverse_lookup(chinese)
     return results
 endfunction
 
+" ---------------------------------------------------
+function! s:vimim_build_unihan_reverse_cache(chinese)
+" ---------------------------------------------------
+" [input]  馬力     [unihan] u808f => 8022 cao4 copulate
+" [output] {'u99ac':['7132','ma3'],'u529b':['4002','li2']}
+" ---------------------------------------------------
+    if s:pinyin_4corner_filter < 2
+        return
+    endif
+    for char in split(a:chinese, '\zs')
+        let key = printf('u%x',char2nr(char))
+        if !has_key(s:unihan_4corner_cache, key)
+            let results = s:vimim_get_data_from_directory(key, 'unihan')
+            if !empty(results)
+                let s:unihan_4corner_cache[key] = results
+            endif
+        endif
+    endfor
+endfunction
+
 " ----------------------------------------------
 function! s:vimim_reverse_one_entry(chinese, im)
 " ----------------------------------------------
@@ -2273,7 +2291,8 @@ function! s:vimim_reverse_one_entry(chinese, im)
     let bodies = []   "|  马  力
     let head = ''
     for chinese in split(a:chinese, '\zs')
-        let unicode = printf('u%x',char2nr(chinese))
+        let ddddd = char2nr(chinese)
+        let unicode = printf('u%x', ddddd)
         let head = ''
         if im == 'unicode'
             let head = unicode
@@ -2310,35 +2329,15 @@ function! s:vimim_reverse_one_entry(chinese, im)
     if empty(head)
         return []
     endif
-    return [join(headers), join(bodies)]
-endfunction
-
-" ---------------------------------------------------
-function! s:vimim_build_unihan_reverse_cache(chinese)
-" ---------------------------------------------------
-" [input]  馬力       [unihan] u808f => 8022 cao4 copulate
-" [output] {'u99ac':['7132','ma3'],'u529b':['4002','li2']}
-" ---------------------------------------------------
-    if s:pinyin_4corner_filter < 2
-        return
-    endif
-    let chinese = substitute(a:chinese,'\w','','g')
-    for char in split(chinese, '\zs')
-        let key = printf('u%x',char2nr(char))
-        if has_key(s:unihan_4corner_cache, key)
-            continue
-        else
-            let results = s:vimim_get_data_from_directory(key, 'unihan')
-            let s:unihan_4corner_cache[key] = results
-        endif
-    endfor
+    let results = [join(headers), join(bodies)]
+    return results
 endfunction
 
 " ---------------------------------------------
 function! s:vimim_onekey_1234567890_filter_on()
 " ---------------------------------------------
     if s:pinyin_4corner_filter > 0
-        for _ in s:pqwertyuio
+        for _ in s:qwerty
             sil!exe'inoremap <silent>  '._.'
             \  <C-R>=<SID>vimim_onekey_1234567890_filter("'._.'")<CR>'
         endfor
@@ -2353,7 +2352,7 @@ function! <SID>vimim_onekey_1234567890_filter(n)
         if s:pinyin_4corner_filter < 1
             let msg = "use 1234567890 as pinyin filter"
         else
-            let label_alpha = join(s:pqwertyuio,'')
+            let label_alpha = join(s:qwerty,'')
             let label = match(label_alpha, a:n)
         endif
         if empty(len(s:menu_digit_as_filter))
@@ -2371,10 +2370,6 @@ endfunction
 function! s:vimim_digit_filter(chinese)
 " -------------------------------------
     let chinese = a:chinese
-    if empty(len(s:menu_digit_as_filter))
-        return chinese
-    endif
-    call s:vimim_build_unihan_reverse_cache(chinese)
     let number = s:vimim_get_filter_number(chinese)
     let pattern = "^" . substitute(s:menu_digit_as_filter,'\D','','g')
     let matched = match(number, pattern)
@@ -2403,12 +2398,11 @@ function! s:vimim_get_filter_number(chinese)
             continue
         else
             let key = printf('u%x',char2nr(chinese))
-            if !has_key(s:unihan_4corner_cache, key)
-                continue
+            if has_key(s:unihan_4corner_cache, key)
+                let digit = get(s:unihan_4corner_cache[key],0)
+                let head .= digit[:0]
+                let tail = digit[1:]
             endif
-            let digit = get(s:unihan_4corner_cache[key],0)
-            let head .= digit[:0]
-            let tail = digit[1:]
         endif
     endfor
     let expected_filtering_number = head . tail
@@ -2442,16 +2436,12 @@ endfunction
 " ------------------------------------------------
 function! s:vimim_get_pinyin_from_pinyin(keyboard)
 " ------------------------------------------------
-    if !empty(s:vimim_shuangpin)
-        return []
-    else
+    if empty(s:vimim_shuangpin)
         let msg = "pinyin breakdown: pinyin=>pin'yin"
+    else
+        return []
     endif
     let keyboard2 = s:vimim_quanpin_transform(a:keyboard)
-    if s:vimimdebug > 0
-        call s:debugs('pinyin_in', a:keyboard)
-        call s:debugs('pinyin_out', keyboard2)
-    endif
     let results = split(keyboard2,"'")
     if len(results) > 1
         return results
@@ -2598,10 +2588,8 @@ function! s:vimim_get_pinyin_from_shuangpin(keyboard)
 " ---------------------------------------------------
     let keyboard = a:keyboard
     let keyboard2 = s:vimim_shuangpin_transform(keyboard)
-    if s:vimimdebug > 0
-        call s:debugs('shuangpin_in', keyboard)
-        call s:debugs('shuangpin_out', keyboard2)
-    endif
+    call s:debugs('shuangpin_in', keyboard)
+    call s:debugs('shuangpin_out', keyboard2)
     if keyboard2 ==# keyboard
         let msg = "no point to do transform"
     else
@@ -2791,7 +2779,7 @@ endfunction
 " -----------------------------------
 function! s:vimim_shuangpin_abc(rule)
 " -----------------------------------
-" [auto clould test] vim sogou.shuangpin_abc.vimim
+" [auto cloud test] vim sogou.shuangpin_abc.vimim
 " vtpc => shuang pin => double pinyin
     call extend(a:rule[0],{ "zh" : "a", "ch" : "e", "sh" : "v" })
     call extend(a:rule[1],{
@@ -2808,7 +2796,7 @@ endfunction
 " ----------------------------------
 function! s:vimim_shuangpin_ms(rule)
 " ----------------------------------
-" [auto clould test] vim sogou.shuangpin_ms.vimim
+" [auto cloud test] vim sogou.shuangpin_ms.vimim
 " vi=>zhi ii=>chi ui=>shi keng=>keneng
     call extend(a:rule[0],{ "zh" : "v", "ch" : "i", "sh" : "u" })
     call extend(a:rule[1],{
@@ -2826,7 +2814,7 @@ endfunction
 " --------------------------------------
 function! s:vimim_shuangpin_nature(rule)
 " --------------------------------------
-" [auto clould test] vim sogou.shuangpin_nature.vimim
+" [auto cloud test] vim sogou.shuangpin_nature.vimim
 " goal: 'woui' => wo shi => i am
     call extend(a:rule[0],{ "zh" : "v", "ch" : "i", "sh" : "u" })
     call extend(a:rule[1],{
@@ -2843,7 +2831,7 @@ endfunction
 " ----------------------------------------
 function! s:vimim_shuangpin_plusplus(rule)
 " ----------------------------------------
-" [auto clould test] vim sogou.shuangpin_plusplus.vimim
+" [auto cloud test] vim sogou.shuangpin_plusplus.vimim
     call extend(a:rule[0],{ "zh" : "v", "ch" : "u", "sh" : "i" })
     call extend(a:rule[1],{
         \"an" : "f", "ao" : "d", "ai" : "s", "ang": "g",
@@ -2859,7 +2847,7 @@ endfunction
 " --------------------------------------
 function! s:vimim_shuangpin_purple(rule)
 " --------------------------------------
-" [auto clould test] vim sogou.shuangpin_purple.vimim
+" [auto cloud test] vim sogou.shuangpin_purple.vimim
     call extend(a:rule[0],{ "zh" : "u", "ch" : "a", "sh" : "i" })
     call extend(a:rule[1],{
         \"an" : "r", "ao" : "q", "ai" : "p", "ang": "s",
@@ -2875,7 +2863,7 @@ endfunction
 " -------------------------------------
 function! s:vimim_shuangpin_flypy(rule)
 " -------------------------------------
-" [auto clould test] vim sogou.shuangpin_flypy.vimim
+" [auto cloud test] vim sogou.shuangpin_flypy.vimim
     call extend(a:rule[0],{ "zh" : "v", "ch" : "i", "sh" : "u" })
     call extend(a:rule[1],{
         \"an" : "j", "ao" : "c", "ai" : "d", "ang": "h",
@@ -3024,8 +3012,8 @@ function! s:vimim_localization()
     endif
     " ---------------------------------------------
     if s:pinyin_4corner_filter > 0
-        let s:abcd = "'abcdfgz"
-        let s:pqwertyuio = split('pqwertyuio', '\zs')
+        let s:abcd = "'abcdvfgz"
+        let s:qwerty = split('pqwertyuio', '\zs')
     endif
     " ---------------------------------------------
     let datafile_fenc_chinese = 0
@@ -3055,7 +3043,6 @@ function! s:vimim_localization()
     if s:localization > 0
         let warning = "performance hit if &encoding & datafile differs!"
     endif
-    " ---------------------------------------------
     let s:multibyte = 2
     if &encoding == "utf-8"
         let s:multibyte = 3
@@ -3098,69 +3085,21 @@ function! s:vimim_get_unicode_ddddd(keyboard)
     return ddddd
 endfunction
 
-" -------------------------------------
-function! s:vimim_get_unicode(keyboard)
-" -------------------------------------
+" ---------------------------------------------
+function! s:vimim_get_unicode(keyboard, height)
+" ---------------------------------------------
     let keyboard = a:keyboard
     let ddddd = s:vimim_get_unicode_ddddd(keyboard)
     if empty(ddddd)
         return []
     endif
     let numbers = []
-    for i in range(&pumheight)
+    let height = &pumheight * a:height
+    for i in range(height)
         let digit = str2nr(ddddd+i)
         call add(numbers, digit)
     endfor
     return s:vimim_get_unicodes(numbers,1)
-endfunction
-
-" -----------------------------------------
-function! s:vimim_without_backend(keyboard)
-" -----------------------------------------
-    let keyboard = a:keyboard
-    if keyboard =~ '\l' && len(keyboard) == 1
-        let msg = "make abcdefghijklmnopqrst alive"
-    else
-        return []
-    endif
-    let numbers = []
-    let gbk = {}
-    let a = char2nr('a')
-    " ---------------------------------------
-    let start = 19968
-    if s:encoding ==# "chinese"
-        let start = 0xb0a1
-        let az  = " b0a1 b0c5 b2c1 b4ee b6ea b7a2 b8c1 baa1 bbf7 "
-        let az .= " bbf7 bfa6 c0ac c2e8 c4c3 c5b6 c5be c6da c8bb "
-        let az .= " c8f6 cbfa cdda cdda cdda cef4 d1b9 d4d1"
-        let gb_code_orders = split(az)
-        for xxxx in s:az_list
-            if !empty(nr2char(xxxx))
-                let gbk[nr2char(xxxx)] = "0x" . get(gb_code_orders, xxxx-a)
-            endif
-        endfor
-    elseif s:encoding ==# "taiwan"
-        let start = 42048
-    endif
-    " ----------------------------------------------------------
-    " [purpose] to input Chinese without datafile nor internet
-    "  (1) every abcdefghijklmnopqrstuvwxy shows different menu
-    "  (2) every char displays 16*16*3=768 glyph in omni menu
-    "  (3) the total number of glyphs is 16*16*3*26=19968
-    " ----------------------------------------------------------
-    let label = char2nr(keyboard) - a
-    let block = 16*16*3
-    let start += label*block
-    if s:encoding ==# "chinese" && has_key(gbk, keyboard)
-        let start = gbk[keyboard]
-    endif
-    let end = start + block
-    for i in range(start, end)
-        call add(numbers, str2nr(i,10))
-    endfor
-    " ------------------------------------
-    return s:vimim_get_unicodes(numbers,0)
-    " ------------------------------------
 endfunction
 
 " ------------------
@@ -3276,7 +3215,7 @@ call add(s:vimims, VimIM)
 " ------------------------------------------------
 function! s:vimim_scan_backend_embedded_datafile()
 " ------------------------------------------------
-    if empty(s:path2)
+    if empty(s:vimim_data_directory)
         let msg = "no need datafile when directory exists"
     else
         return
@@ -3287,7 +3226,7 @@ endfunction
 " -------------------------------------
 function! s:vimim_do_force_datafile(im)
 " -------------------------------------
-    let s:path2 = 0
+    let s:vimim_data_directory = 0
     let s:vimim_cloud_sogou = 0
     let s:vimim_cloud_plugin = 0
     if match(s:xingma, a:im) < 0
@@ -3372,9 +3311,9 @@ function! s:vimim_build_datafile_lines()
     endif
 endfunction
 
-" ----------------------------------------------------
-function! s:vimim_pinyin(lines, keyboard, match_start)
-" ----------------------------------------------------
+" ---------------------------------------------------------
+function! s:vimim_smart_match(lines, keyboard, match_start)
+" ---------------------------------------------------------
     let match_start = a:match_start
     if empty(a:lines) || match_start < 0
         return []
@@ -3388,7 +3327,7 @@ function! s:vimim_pinyin(lines, keyboard, match_start)
         let pinyin_tone = '\d\='
         let pattern .= pinyin_tone . '\>'
     endif
-    let pattern .=  '\)\@!'
+    let pattern .= '\)\@!'
     " ----------------------------------------
     let matched = match(a:lines, pattern, match_start)-1
     let match_end = match_start
@@ -3483,13 +3422,12 @@ function! s:vimim_sentence_match_cache(keyboard)
         return [keyboard]
     endif
     let im = s:ui.im
-    " -----------------------------------------
     let blocks = s:vimim_break_sentence_into_block(keyboard)
     if !empty(blocks)
         return blocks
     endif
-    " -----------------------------------------
     let max = s:vimim_hjkl_redo_pinyin_match(keyboard)
+    " -----------------------------------------
     while max > 0
         let max -= 1
         let head = strpart(keyboard, 0, max)
@@ -3500,7 +3438,7 @@ function! s:vimim_sentence_match_cache(keyboard)
             continue
         endif
     endwhile
-    " --------------------------------------------------
+    " -----------------------------------------
     if len(results) > 0
         return s:vimim_break_string_at(keyboard, max)
     else
@@ -3511,7 +3449,7 @@ endfunction
 " -----------------------------------------------------
 function! s:vimim_get_sentence_datafile_lines(keyboard)
 " -----------------------------------------------------
-    sil!call s:vimim_build_datafile_lines()
+    call s:vimim_build_datafile_lines()
     let keyboard = a:keyboard
     let results = []
     let keyboards = s:vimim_sentence_match_datafile(keyboard)
@@ -3526,20 +3464,19 @@ endfunction
 function! s:vimim_sentence_match_datafile(keyboard)
 " -------------------------------------------------
     let lines = s:backend[s:ui.root][s:ui.im].lines
-    if empty(lines) | return [] | endif
-    " ---------------------------------------------
+    if empty(lines)
+        return []
+    endif
     let keyboard = a:keyboard
     let pattern = '^' . keyboard
     let match_start = match(lines, pattern)
     if match_start > -1
         return [keyboard]
     endif
-    " ---------------------------------------------
     let blocks = s:vimim_break_sentence_into_block(keyboard)
     if !empty(blocks)
         return blocks
     endif
-    " ---------------------------------------------
     let max = s:vimim_hjkl_redo_pinyin_match(keyboard)
     while max > 0
         let head = strpart(keyboard, 0, max)
@@ -3552,7 +3489,6 @@ function! s:vimim_sentence_match_datafile(keyboard)
             break
         endif
     endwhile
-    " ------------------------------------------------
     if match_start < 0
         return []
     else
@@ -3564,7 +3500,7 @@ endfunction
 function! s:vimim_get_data_from_datafile(keyboard)
 " ------------------------------------------------
     let keyboard = a:keyboard
-    let lines =  s:backend[s:ui.root][s:ui.im].lines
+    let lines = s:backend[s:ui.root][s:ui.im].lines
     if empty(lines)
         return []
     endif
@@ -3576,10 +3512,11 @@ function! s:vimim_get_data_from_datafile(keyboard)
     else
         if s:ui.has_dot == 2
             let results = s:vimim_fixed_match(lines, keyboard, 1)
-        elseif s:ui.im == 'pinyin'
-            let results = s:vimim_pinyin(lines, keyboard, match_start)
+        elseif s:ui.im == 'test'
+            let pumheight = &pumheight - 1
+            let results = s:vimim_fixed_match(lines, keyboard, pumheight)
         else
-            let results = s:vimim_fixed_match(lines, keyboard, 4)
+            let results = s:vimim_smart_match(lines, keyboard, match_start)
         endif
     endif
     return results
@@ -3634,7 +3571,7 @@ function! s:vimim_break_pinyin_digit(keyboard)
             let menu = get(blocks, 0)
             let filter = get(blocks, 1)
             if menu =~ '\D' && filter =~ '^\d\+$'
-                let s:menu_digit_as_filter =  filter . "_"
+                let s:menu_digit_as_filter = filter . "_"
             endif
         endif
     endif
@@ -3647,87 +3584,28 @@ function! s:vimim_build_datafile_cache()
     if s:vimim_use_cache < 1
         return
     endif
-    let progressbar = 0
-    " ----------------------------------
-    if empty(s:unihan_4corner_lines)
-        let msg = " no way to build digit cache "
-    elseif empty(s:unihan_4corner_cache)
-        if match(s:xingma, s:ui.im) < 0
-            let progressbar += 1
-        endif
-    endif
-    " ----------------------------------
     if s:backend[s:ui.root][s:ui.im].root == "datafile"
         if empty(s:backend[s:ui.root][s:ui.im].lines)
             let msg = " no way to build datafile cache "
         elseif empty(s:backend[s:ui.root][s:ui.im].cache)
-            let progressbar += 2
+            call s:vimim_cache_loading_progressbar()
         endif
-    endif
-    " ----------------------------------
-    if progressbar > 0
-        call s:vimim_cache_loading_progressbar(progressbar)
     endif
 endfunction
 
-" ------------------------------------------------------
-function! s:vimim_cache_loading_progressbar(progressbar)
-" ------------------------------------------------------
-    let title_1 = s:vimim_chinese('digit')
-    let total_1 = len(s:unihan_4corner_lines)
-    let title_2 = s:vimim_chinese(s:ui.im)
-    let total_2 = len(s:backend[s:ui.root][s:ui.im].lines)
-    " --------------------------------------------------
-    let title = ""
-    let total = ""
-    if a:progressbar == 1
-        let title = title_1
-        let total = total_1
-    elseif a:progressbar == 2
-        let title = title_2
-        let total = total_2
-    elseif a:progressbar == 3
-        let title = title_2 . s:plus . title_1
-        let total = total_2 + total_1
-    endif
-    " --------------------------------------------------
+" -------------------------------------------
+function! s:vimim_cache_loading_progressbar()
+" -------------------------------------------
+    let title = s:vimim_chinese(s:ui.im)
+    let total = len(s:backend[s:ui.root][s:ui.im].lines)
     let title .= s:vimim_chinese("datafile")
     let progress = "VimIM loading " . title
     let progressbar = NewSimpleProgressBar(progress, total)
-    " --------------------------------------------------
     try
-        if a:progressbar == 1
-            sil!call s:vimim_loading_unicode_digit_cache(progressbar)
-        elseif a:progressbar == 2
-            sil!call s:vimim_loading_datafile_cache(progressbar)
-        elseif a:progressbar == 3
-            sil!call s:vimim_loading_datafile_cache(progressbar)
-            sil!call s:vimim_loading_unicode_digit_cache(0)
-        endif
+        sil!call s:vimim_loading_datafile_cache(progressbar)
     finally
         call progressbar.restore()
     endtry
-endfunction
-
-" --------------------------------------------------------
-function! s:vimim_loading_unicode_digit_cache(progressbar)
-" --------------------------------------------------------
-" in:  ['u808f 8022', 'u808f cao4']
-" out: {'u808f': ['8022', 'cao4']}
-" ---------------------------------
-    if empty(s:unihan_4corner_cache)
-        let msg = " cache only needs to be loaded once "
-    else
-        return
-    endif
-    for line in s:unihan_4corner_lines
-        if !empty(a:progressbar)
-            call a:progressbar.incr(1)
-        endif
-        let oneline_list = split(line)
-        let menu = remove(oneline_list, 0)
-        let s:unihan_4corner_cache[menu] = oneline_list
-    endfor
 endfunction
 
 " ---------------------------------------------------
@@ -3762,14 +3640,14 @@ call add(s:vimims, VimIM)
 " -------------------------------------------------
 function! s:vimim_scan_backend_embedded_directory()
 " -------------------------------------------------
-    if empty(s:path2)
-         let s:path2 = s:path . "vimim/"
+    if empty(s:vimim_data_directory)
+         let s:vimim_data_directory = s:path . "vimim/"
     endif
     " -----------------------------------
-    if isdirectory(s:path2)
-        let msg = " use directory as backend "
+    if isdirectory(s:vimim_data_directory)
+        let msg = " use directory as backend database "
     else
-        let s:path2 = 0
+        let s:vimim_data_directory = 0
         let return
     endif
     " -----------------------------------
@@ -3789,7 +3667,7 @@ function! s:vimim_scan_backend_embedded_directory()
         if s:chinese_input_mode !~ 'onekey'
         \|| buffer =~ 'dynamic' || buffer =~ 'static'
             let msg = 'digit filter for onekey only'
-        elseif im =~ 'pinyin' && isdirectory(s:path2 . "unihan")
+        elseif isdirectory(s:vimim_data_directory . "unihan")
             let s:pinyin_4corner_filter = 2
         endif
     endif
@@ -3797,7 +3675,7 @@ function! s:vimim_scan_backend_embedded_directory()
     let im = s:vimim_get_valid_im_name(im)
     let s:ui.root = "directory"
     let s:ui.im = im
-    let datafile = s:path2 . im
+    let datafile = s:vimim_data_directory . im
     call add(s:ui.frontends, [s:ui.root, s:ui.im])
     if empty(s:backend.directory)
         let s:backend.directory[im] = s:vimim_one_backend_hash()
@@ -3893,10 +3771,10 @@ endfunction
 function! s:vimim_get_valid_directory(im)
 " ---------------------------------------
     let im = a:im
-    if empty(im) || empty(s:path2)
+    if empty(im) || empty(s:vimim_data_directory)
         return 0
     endif
-    let dir = s:path2 . im
+    let dir = s:vimim_data_directory . im
     if isdirectory(dir)
         return dir
     else
@@ -3921,15 +3799,25 @@ endfunction
 function! s:vimim_get_data_from_directory(keyboard, im)
 " -----------------------------------------------------
     let dir = s:vimim_get_valid_directory(a:im)
-    if empty(dir)
+    if empty(dir) && empty(s:vimim_private_data_directory)
         return []
     endif
-    let results = []
-    let filename = dir . '/' . a:keyboard
+    let lines = []
+    let filename = s:vimim_private_data_directory . a:keyboard
     if filereadable(filename)
-        let results = readfile(filename)
+        let lines = readfile(filename)
     endif
-    return results
+    if empty(lines)
+        let filename = dir . '/' . a:keyboard
+        if filereadable(filename)
+            if a:im == 'unihan'
+                let lines = readfile(filename, '', 2)
+            else
+                let lines = readfile(filename)
+            endif
+        endif
+    endif
+    return lines
 endfunction
 
 " -----------------------------------------------------
@@ -3981,7 +3869,7 @@ endfunction
 " ------------------------------------------------
 function! s:vimim_get_sentence_directory(keyboard)
 " ------------------------------------------------
-    let msg = "Directory data is natural to vim editor."
+    let msg = "Directory data is natural to text editor like vi."
     let keyboard = a:keyboard
     let results = []
     let keyboards = s:vimim_sentence_match_directory(keyboard, s:ui.im)
@@ -3998,7 +3886,7 @@ function! s:vimim_sentence_match_directory(keyboard, im)
     let keyboard = a:keyboard
     let dir = s:vimim_get_valid_directory(a:im)
     let filename = dir . '/' . keyboard
-    if filereadable(filename)
+    if filereadable(filename) || keyboard =~ '^oo'
         return [keyboard]
     endif
     " --------------------------------------------------
@@ -4047,7 +3935,7 @@ function! s:vimim_hjkl_redo_pinyin_match(keyboard)
         endif
     endif
     " --------------------------------------------
-    let msg = " yeyeqifangcao "
+    let msg = " yeyeqifangcao  <C-6> <Space> <Space> < <Space> "
     let pinyins = s:vimim_get_pinyin_from_pinyin(keyboard)
     if len(pinyins) > 1
         let last = pinyins[-1:-1]
@@ -4063,7 +3951,7 @@ function! g:vimim_mkdir1()
 " (1) existed order:  key  value_1 value_2
 " (2) new items:      key  value_2 value_3
 " (3) new order:      key  value_1 value_2 value_3
-    call s:vimim_mkdir('append')
+    call s:vimim_mkdir('append', 0, [])
 endfunction
 
 " ------------------------
@@ -4073,7 +3961,7 @@ function! g:vimim_mkdir2()
 " (1) existed order:  key  value_1 value_2
 " (2) new items:      key  value_2 value_3
 " (3) new order:      key  value_2 value_3 value_1
-    call s:vimim_mkdir('prepend')
+    call s:vimim_mkdir('prepend', 0, [])
 endfunction
 
 " ------------------------
@@ -4083,27 +3971,33 @@ function! g:vimim_mkdir3()
 " (1) existed order:  key  value_1 value_2
 " (2) new items:      key  value_2 value_3
 " (3) new order:      key  value_2 value_3
-    call s:vimim_mkdir('replace')
+    call s:vimim_mkdir('replace', 0, [])
 endfunction
 
-" -----------------------------
-function! s:vimim_mkdir(option)
-" -----------------------------
+" -----------------------------------------
+function! s:vimim_mkdir(option, dir, lines)
+" -----------------------------------------
 " Goal: create one file per entry based on vimim.xxx.txt
 " Sample file A: /home/vimim/pinyin/jjjj
 " Sample file B: /home/vimim/unihan/u808f
 " (1) $cd $VIM/vimfiles/plugin/vimim/
 " (2) $vi vimim.pinyin.txt => :call g:vimim_mkdir1()
 " --------------------------------------------------
-    let root = expand("%:p:h")
-    let dir = root . "/" . expand("%:e:e:r")
-    if !exists(dir) && !isdirectory(dir)
-        call mkdir(dir, "p")
+    let dir = a:dir
+    let lines = a:lines
+    if empty(dir)
+        let root = expand("%:p:h")
+        let dir = root . "/" . expand("%:e:e:r")
+        if !exists(dir) && !isdirectory(dir)
+            call mkdir(dir, "p")
+        endif
     endif
-    let lines = readfile(bufname("%"))
+    if empty(lines)
+        let lines = readfile(bufname("%"))
+    endif
     let option = a:option
     for line in lines
-        if line =~ '^#'
+        if line =~# '^\W'
             continue
         endif
         let entries = split(line)
@@ -4304,7 +4198,7 @@ function! s:vimim_magic_tail(keyboard)
         return []
     endif
     let magic_tail = keyboard[-1:]
-    let last_but_one =  keyboard[-2:-2]
+    let last_but_one = keyboard[-2:-2]
     if magic_tail =~ "[.']" && last_but_one =~ "[0-9a-z]"
         let msg = "play with magic trailing char"
     else
@@ -4395,9 +4289,7 @@ function! s:vimim_get_sogou_key()
         endif
     catch
         let msg = "It looks like sogou has trouble with its cloud?"
-        if s:vimimdebug > 0
-            call s:debugs('sogou::exception=', v:exception)
-        endif
+        call s:debugs('sogou::exception=', v:exception)
         let output = 0
     endtry
     if empty(output)
@@ -4436,9 +4328,7 @@ function! s:vimim_get_cloud_sogou(keyboard, force)
         endif
     catch
         let msg = "it looks like sogou has trouble with its cloud?"
-        if s:vimimdebug > 0
-            call s:debugs('sogou::exception=', v:exception)
-        endif
+        call s:debugs('sogou::exception=', v:exception)
         let output = 0
     endtry
     call s:debugs('sogou::outputquery=', output)
@@ -4490,7 +4380,6 @@ function! s:vimim_scan_backend_mycloud()
 " let g:vimim_mycloud_url = "dll:/data/libvimim.so:192.168.0.1"
 " let g:vimim_mycloud_url = "http://pim-cloud.appspot.com/abc/"
 " let g:vimim_mycloud_url = "http://pim-cloud.appspot.com/ms/"
-" let g:vimim_mycloud_url = "http://pim-cloud.appspot.com/qp/"
 " -----------------------------------------------------------------------
     let embedded_backend = s:vimim_has_embedded_backend()
     if empty(embedded_backend)
@@ -4581,10 +4470,8 @@ function! s:vimim_access_mycloud(cloud, cmd)
 " ------------------------------------------
 "  use the same function to access mycloud by libcall() or system()
     let executable = s:www_executable
-    if s:vimimdebug > 0
-        call s:debugs("cloud", a:cloud)
-        call s:debugs("cmd", a:cmd)
-    endif
+    call s:debugs("cloud", a:cloud)
+    call s:debugs("cmd", a:cmd)
     if s:cloud_plugin_mode == "libcall"
         let arg = s:cloud_plugin_arg
         if empty(arg)
@@ -4634,7 +4521,7 @@ function! s:vimim_check_mycloud_plugin_libcall()
 " ----------------------------------------------
     " we do plug-n-play for libcall(), not for system()
     let cloud = s:vimim_get_libvimim()
-    if empty(clould)
+    if empty(cloud)
         return 0
     endif
     let s:cloud_plugin_mode = "libcall"
@@ -4651,9 +4538,7 @@ function! s:vimim_check_mycloud_plugin_libcall()
                 return cloud
             endif
         catch
-            if s:vimimdebug > 0
-                call s:debugs('libcall_mycloud2::error=',v:exception)
-            endif
+            call s:debugs('libcall_mycloud2::error=',v:exception)
         endtry
     endif
     " libcall check failed, we now check system()
@@ -4742,10 +4627,8 @@ function! s:vimim_check_mycloud_plugin_url()
                     return cloud
                 endif
             catch
-                if s:vimimdebug > 0
-                    let key = 'libcall_mycloud1::error='
-                    call s:debugs(key, v:exception)
-                endif
+                let key = 'libcall_mycloud1::error='
+                call s:debugs(key, v:exception)
             endtry
         endif
     elseif part[0] ==# "http" || part[0] ==# "https"
@@ -4776,9 +4659,7 @@ function! s:vimim_get_mycloud_plugin(keyboard)
         let output = s:vimim_access_mycloud(cloud, input)
     catch
         let output = 0
-        if s:vimimdebug > 0
-            call s:debugs('mycloud::error=',v:exception)
-        endif
+        call s:debugs('mycloud::error=',v:exception)
     endtry
     if empty(output)
         return []
@@ -4789,13 +4670,11 @@ endfunction
 " --------------------------------------------------------
 function! s:vimim_process_mycloud_output(keyboard, output)
 " --------------------------------------------------------
+" one line output example:  春夢      8       4420
     let output = a:output
     if empty(output) || empty(a:keyboard)
         return []
     endif
-    " ----------------------
-    " 春夢      8       4420
-    " ----------------------
     let menu = []
     for item in split(output, '\n')
         let item_list = split(item, '\t')
@@ -4847,11 +4726,13 @@ call add(s:vimims, VimIM)
 " ----------------------------------
 function! s:vimim_initialize_debug()
 " ----------------------------------
-    if !isdirectory("/home/xma")
+    if !isdirectory("/home/xma/vim")
         return
     endif
-    let s:path2 = "/home/vimim/"
-    let svn = s:path2 . "svn"
+    let s:vimim_private_data_directory = "/home/xma/oo/"
+    let s:vimim_private_data_file =      "/home/xma/oo/io"
+    let s:vimim_data_directory =         "/home/vimim/"
+    let svn = s:vimim_data_directory . "svn"
     let s:vimim_vimimdata = svn . "/vimim-data/trunk/data/"
     let s:vimim_libvimdll = svn . "/mycloud/vimim-mycloud/libvimim.dll"
     let s:vimim_custom_skin = 3
@@ -4917,13 +4798,15 @@ endfunction
 " ----------------------------
 function! s:debugs(key, value)
 " ----------------------------
-    let item = '['
-    let item .= s:debug_count
-    let item .= ']'
-    let item .= a:key
-    let item .= '='
-    let item .= a:value
-    call add(s:debugs, item)
+    if s:vimimdebug > 0
+        let item = '['
+        let item .= s:debug_count
+        let item .= ']'
+        let item .= a:key
+        let item .= '='
+        let item .= a:value
+        call add(s:debugs, item)
+    endif
 endfunction
 
 " -----------------------------
@@ -5065,7 +4948,7 @@ function! s:vimim_i_setting_on()
 " ------------------------------
     set nolazyredraw
     if empty(&pumheight)
-        let &pumheight=8
+        let &pumheight=9
     endif
     set hlsearch
     set smartcase
@@ -5135,20 +5018,19 @@ endfunction
 " ---------------------------------
 function! s:reset_before_anything()
 " ---------------------------------
-    call s:reset_popupmenu_list()
+    call s:reset_matched_list()
     let s:no_internet_connection = 0
     let s:pattern_not_found = 0
     let s:chinese_punctuation = (s:vimim_chinese_punctuation+1)%2
 endfunction
 
-" --------------------------------
-function! s:reset_popupmenu_list()
-" --------------------------------
+" ------------------------------
+function! s:reset_matched_list()
+" ------------------------------
     let s:pumvisible_yes = 0
     let s:keyboard_head = 0
-    let s:menu_digit_as_filter = ""
     let s:pumvisible_hjkl_2nd_match = 0
-    let s:popupmenu_list = []
+    let s:menu_digit_as_filter = ""
     let s:matched_list = []
 endfunction
 
@@ -5172,7 +5054,7 @@ function! g:vimim_reset_after_insert()
     if s:pumvisible_yes > 0
         let key = g:vimim()
     endif
-    call s:reset_popupmenu_list()
+    call s:reset_matched_list()
     call g:vimim_reset_after_auto_insert()
     sil!exe 'sil!return "' . key . '"'
 endfunction
@@ -5187,14 +5069,22 @@ function! g:vimim()
 " -----------------------------------------------------
     let key = ""
     let byte_before = getline(".")[col(".")-2]
-    if byte_before =~# s:valid_key
+    if byte_before =~ s:valid_key
         let key = '\<C-X>\<C-U>'
+    endif
+    if empty(key) && s:chinese_input_mode != 'dynamic'
+        let five_byte_before = getline(".")[col(".")-6]
+        if byte_before =~ '\x' && five_byte_before ==# 'u'
+            let key = '\<C-X>\<C-U>'
+        endif
+    endif
+    if empty(key)
+        call g:vimim_reset_after_auto_insert()
+    else
         if s:chinese_input_mode == 'dynamic'
             call g:vimim_reset_after_auto_insert()
         endif
         let key .= '\<C-R>=g:vimim_menu_select()\<CR>'
-    else
-        call g:vimim_reset_after_auto_insert()
     endif
     sil!exe 'sil!return "' . key . '"'
 endfunction
@@ -5210,7 +5100,7 @@ function! g:vimim_menu_select()
             if s:insert_without_popup > 1
                 let key .= '\<Esc>'
             endif
-            call s:reset_popupmenu_list()
+            call s:reset_matched_list()
             let s:insert_without_popup = 0
         endif
     endif
@@ -5317,7 +5207,6 @@ if a:start
 
     let last_seen_nonsense_column = start_column
     let last_seen_backslash_column = start_column
-
     let nonsense_pattern = "[0-9.']"
     if s:ui.im == 'pinyin'
         let nonsense_pattern = "[0-9.]"
@@ -5366,24 +5255,30 @@ else
     if len(s:menu_digit_as_filter) > 0
         if len(s:matched_list) > 1
             let results = s:vimim_pair_list(s:matched_list)
+            if empty(len(results))
+                let results = s:vimim_get_previous_pair_list()
+            endif
             if !empty(len(results))
                 return s:vimim_popupmenu_list(results)
             endif
         endif
     endif
 
+    " [eggs] hunt classic easter egg ... vim<C-6>
+    " -------------------------------------------
     if s:chinese_input_mode =~ 'onekey'
-        " [eggs] hunt classic easter egg ... vim<C-6>
-        " -------------------------------------------
         if keyboard ==# "vim" || keyboard =~# "^vimim"
             let results = s:vimim_easter_chicken(keyboard)
             if !empty(len(results))
                 return s:vimim_popupmenu_list(results)
             endif
         endif
-        " [unicode] support direct unicode/gb/big5 input
-        " ----------------------------------------------
-        let results = s:vimim_get_unicode(keyboard)
+    endif
+
+    " [unicode] support direct unicode/gb/big5 input
+    " ----------------------------------------------
+    if s:chinese_input_mode =~ 'onekey'
+        let results = s:vimim_get_unicode(keyboard, 108/9)
         if !empty(len(results))
             return s:vimim_popupmenu_list(results)
         endif
@@ -5407,7 +5302,6 @@ else
     else
         let results = s:vimim_get_mycloud_plugin(keyboard)
         if empty(len(results))
-            " return empty list if the result is empty
             return []
         else
             return s:vimim_popupmenu_list(results)
@@ -5465,16 +5359,11 @@ else
     " ---------------------------------------------
     let results = s:vimim_embedded_backend_engine(keyboard)
     if empty(results)
-        let results = s:popupmenu_list
-    else
-        let results = s:vimim_popupmenu_list(results)
-    endif
-    if empty(results)
-        if s:chinese_input_mode == 'dynamic'
+        if s:chinese_input_mode =~ 'dynamic'
             let s:keyboard_leading_zero = ""
         endif
     else
-        return results
+        return s:vimim_popupmenu_list(results)
     endif
 
     " [sogou] last try cloud before giving up
@@ -5512,15 +5401,18 @@ function! s:vimim_get_valid_keyboard(keyboard)
         let s:keyboard_leading_zero = keyboard
     endif
     if empty(str2nr(keyboard))
-        let msg = "the input is alphabet only"
+        let msg = "keyboard input is alphabet only"
     else
         let keyboard = s:keyboard_leading_zero
+    endif
+    " [unicode] support direct unicode/gb/big5 input
+    if keyboard =~# 'u\x\x\x\x' && len(keyboard)==5
+        return keyboard
     endif
     " ignore all-zeroes keyboard inputs
     if empty(s:keyboard_leading_zero)
         return 0
     endif
-    " ignore non-sense keyboard inputs
     if keyboard !~# s:valid_key
         return 0
     endif
