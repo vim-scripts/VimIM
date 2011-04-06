@@ -1,26 +1,20 @@
 This is a mirror of http://www.vim.org/scripts/script.php?script_id=2506
 
 The VimIM is a Vim plugin designed as an independent
-IM (Input Method) to support the input of Chinese at will.
+IM (Input Method) to support CJK search and CJK input.
  　
-VimIM 是一个专门为 vim 玩家开发的嵌入式中文输入法。
+VimIM是一个基于Vim的嵌入式中文输入法。
 
-░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
-　　　
-不启动输入法，不敲中文，就可以搜索中文。
-不启动输入法，不换模式，也可以输入中文。
-　　　　　
-不用浏览器，不设选项，就可以云输入，包括六种双拼。
-不耗内存/CPU，不依赖外挂程式，也可以使用海量词库。
-　　　　　
-不用鼠标，不用快捷键，不等于不能进入中文输入模式。
-不懂输入法的规矩，不等于不能给自己的输入法定规矩。
-　　　　　
-░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
-　　　　　
-错误报告：http://code.google.com/p/vimim/issues/list
-民间词库：http://vimim-data.googlecode.com
-自己的云：http://pim-cloud.appspot.com
-新闻论坛：http://groups.google.com/group/vimim
-最新主页：http://vimim.googlecode.com/svn/vimim/vimim.html
-最新程式：http://vimim.googlecode.com/svn/vimim/vimim.vim.html
+不启动中文输入法，不换模式，就可以输入中文。
+不打开弹出式菜单，不敲中文，也可以搜索中文。
+　　　　
+中文输入与英文输入不再相互折腾。
+中文搜索与英文搜索不再分为彼此。
+　　　　
+最新程式： http://vimim.googlecode.com/svn/vimim/vimim.vim.html
+错误报告： http://code.google.com/p/vimim/issues/list
+标准字库： http://vimim.googlecode.com/svn/trunk/plugin/vimim.cjk.txt
+民间词库： http://vimim-data.googlecode.com
+最新主页： http://vimim.googlecode.com/svn/vimim/vimim.html
+新闻论坛： http://groups.google.com/group/vimim
+论坛邮箱： vimim+subscribe@googlegroups.com  
