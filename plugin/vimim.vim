@@ -5,10 +5,11 @@
 " ======================================================
 
 let $VimIM = "easter egg:"" vimimenv<C-6><C-6> vimimrc<C-6><C-6>
-let $VimIM = "$Date: 2011-04-04 21:00:40 -0700 (Mon, 04 Apr 2011) $"
-let $VimIM = "$Revision: 7500 $"
+let $VimIM = "$Date: 2011-04-20 19:52:59 -0700 (Wed, 20 Apr 2011) $"
+let $VimIM = "$Revision: 7565 $"
 let s:url  = ["http://vim.sf.net/scripts/script.php?script_id=2506"]
 let s:url += ["http://vimim.googlecode.com/svn/vimim/vimim.vim.html"]
+let s:url += ["http://code.google.com/p/vimim/source/list"]
 let s:url += ["http://code.google.com/p/vimim/issues/list"]
 let s:url += ["http://vimim.googlecode.com/svn/trunk/plugin/vimim.cjk.txt"]
 let s:url += ["http://vimim-data.googlecode.com"]
@@ -116,6 +117,7 @@ function! s:vimim_initialize_session()
     let s:www_libcall = 0
     " --------------------------------
     let s:www_executable = 0
+    let s:seamless_positions = []
     let s:uxxxx = '^u\x\x\x\x\|^\d\d\d\d\d\>'
     let s:smart_single_quotes = 1
     let s:smart_double_quotes = 1
@@ -184,7 +186,7 @@ function! s:vimim_chinese(english)
         let chinese = get(s:chinese[key], 0)
         if s:encoding !~ "chinese"
         \&& len(s:chinese[key]) > 1
-        \&& s:vimim_onekey_is_tab < 2
+        \&& s:vimim_debug > 1
             let chinese = get(s:chinese[key], 1)
         endif
     endif
@@ -270,6 +272,7 @@ function! s:vimim_initialize_global()
     call add(G, "g:vimim_backslash_close_pinyin")
     call add(G, "g:vimim_imode_pinyin")
     call add(G, "g:vimim_shuangpin")
+    call add(G, "g:vimim_cursor_color")
     call add(G, "g:vimim_latex_suite")
     call add(G, "g:vimim_use_cache")
     call add(G, "g:vimim_custom_menu")
@@ -306,7 +309,7 @@ endfunction
 function! s:vimim_set_global_default(options, default)
 " ----------------------------------------------------
     for variable in a:options
-        let option = ':let ' . variable .' = '. string(eval(variable))
+        let option = ':let ' . variable .' = '.string(eval(variable)).' '
         let s_variable = substitute(variable,"g:","s:",'')
         if exists(variable)
             call add(s:vimimrc, '  ' . option)
@@ -334,7 +337,7 @@ endfunction
 function! s:vimim_initialize_debug()
 " ----------------------------------
     if isdirectory('/home/xma')
-        let g:vimim_debug = 1
+        let g:vimim_debug = 2
         let g:vimim_digit_4corner = 1
         let g:vimim_onekey_is_tab = 2
         let g:vimim_onekey_hit_and_run = 0
@@ -383,6 +386,11 @@ function! s:vimim_initialize_skin()
     if s:vimim_custom_color < 1
         return
     endif
+    let guibg = 'green'
+    if len(s:vimim_cursor_color) > 1
+        let guibg = s:vimim_cursor_color
+    endif
+    sil!exe 'highlight! vimim_cursor_color guifg=NONE guibg=' . guibg
     if s:vimim_custom_color == 1
         highlight! link PmenuSel Title
     elseif s:vimim_custom_color == 2
@@ -391,18 +399,6 @@ function! s:vimim_initialize_skin()
     highlight! PmenuSbar  NONE
     highlight! PmenuThumb NONE
     highlight! Pmenu      NONE
-endfunction
-
-" ---------------------------------
-function! s:vimim_cursor_color(yes)
-" ---------------------------------
-    if empty(a:yes)
-        set ruler
-        highlight! Cursor guifg=bg guibg=fg
-    else
-        set noruler
-        highlight! Cursor guifg=bg guibg=green
-    endif
 endfunction
 
 " ---------------------------------------------------------
@@ -473,12 +469,13 @@ function! s:vimim_egg_vimimhelp()
     let eggs = []
     call add(eggs, "官方网址 " . s:url[0] . " ")
     call add(eggs, "最新程式 " . s:url[1] . " ")
-    call add(eggs, "错误报告 " . s:url[2] . " ")
-    call add(eggs, "标准字库 " . s:url[3] . " ")
-    call add(eggs, "民间词库 " . s:url[4] . " ")
-    call add(eggs, "新闻论坛 " . s:url[5] . " ")
-    call add(eggs, "最新主页 " . s:url[6] . " ")
-    call add(eggs, "论坛邮箱 " . s:url[7] . " ")
+    call add(eggs, "更新报告 " . s:url[2] . " ")
+    call add(eggs, "错误报告 " . s:url[3] . " ")
+    call add(eggs, "标准字库 " . s:url[4] . " ")
+    call add(eggs, "民间词库 " . s:url[5] . " ")
+    call add(eggs, "新闻论坛 " . s:url[6] . " ")
+    call add(eggs, "最新主页 " . s:url[7] . " ")
+    call add(eggs, "论坛邮箱 " . s:url[8] . " ")
 
     return eggs
 endfunction
@@ -698,106 +695,6 @@ function! s:vimim_chinese_rotation() range abort
     endif
 endfunction
 
-" -------------------------------
-function! s:vimim_egg_vimimsort()
-" -------------------------------
-" [usage] vimimsort<C-6>
-"         (1) followed by multiple n for bubble sort
-"         (2) followed by multiple m for merge  sort
-"         (3) followed by x for reset
-" -------------------------------
-    let s:has_vimim_sort = 1
-    let chaos = reverse(range(1,9))
-    let order = [join(chaos)]
-    let sort = 0
-    if s:hjkl_m > 0
-        let sort = s:hjkl_m
-        let s:mergesort_results = []
-        call s:vimim_merge_sort(chaos)
-        let order += s:mergesort_results
-    elseif s:hjkl_n > 0
-        let sort = s:hjkl_n
-        let order += s:vimim_bubble_sort(chaos)
-    endif
-    let egg = get(order, -1)
-    if sort < len(order)
-        let egg = get(order, sort)
-    endif
-    let eggs = ['']
-    for i in split(egg)
-        let egg = repeat(i ,i)
-        call add(eggs, egg)
-    endfor
-    return eggs
-endfunction
-
-" ----------------------------------
-function! s:vimim_bubble_sort(chaos)
-" ----------------------------------
-    " http://en.wikipedia.org/wiki/Bubble_sort
-    let chaos = a:chaos
-    let lines = []
-    let swapped = 1
-    while swapped > 0
-        let swapped = 0
-        let i = 0
-        let j = 0
-        while i < len(chaos)
-            let old = join(chaos)
-            while j < i
-                if chaos[i] < chaos[j]
-                    let tmp = chaos[i]
-                    let chaos[i] = chaos[j]
-                    let chaos[j] = tmp
-                    let swapped = 1
-                endif
-                let j += 1
-            endwhile
-            let i += 1
-            let new = join(chaos)
-            if new != old
-                call add(lines, new)
-            endif
-        endwhile
-    endwhile
-    return lines
-endfunction
-
-" ---------------------------------
-function! s:vimim_merge_sort(chaos)
-" ---------------------------------
-    " http://en.wikipedia.org/wiki/Merge_sort
-    if len(a:chaos) < 2
-        return a:chaos
-    else
-        let middle = len(a:chaos) / 2
-        let left = s:vimim_merge_sort(a:chaos[: middle-1])
-        let right = s:vimim_merge_sort(a:chaos[middle :])
-        let results = s:vimim_merge(left, right)
-        call add(s:mergesort_results, join(results))
-        return results
-    endif
-endfunction
-
-" ----------------------------------
-function! s:vimim_merge(left, right)
-" ----------------------------------
-    let i = 0
-    let j = 0
-    let results = []
-    while i < len(a:left) && j < len(a:right)
-        if a:left[i] <= a:right[j]
-            call add(results, a:left[i])
-            let i += 1
-        else
-            call add(results, a:right[j])
-            let j += 1
-        endif
-    endwhile
-    let results += a:left[i :] + a:right[j :]
-    return results
-endfunction
-
 " ============================================= }}}
 let s:VimIM += [" ====  /search          ==== {{{"]
 " =================================================
@@ -927,8 +824,7 @@ let s:VimIM += [" ====  Chinese Mode     ==== {{{"]
 function! <SID>VimIMSwitch()
 " --------------------------
     let s:chinese_mode_switch = 0
-    if !exists('s:chinese_im_switch')
-    \|| empty(s:chinese_im_switch)
+    if !exists('s:chinese_im_switch') || empty(s:chinese_im_switch)
         let s:chinese_im_switch = 1
     endif
     sil!call <SID>ChineseMode()
@@ -947,9 +843,9 @@ function! <SID>ChineseMode()
     let action = ""
     let s:chinese_mode_switch += 1
     if empty(s:chinese_mode_switch % 2)
-        call g:vimim_stop()
+        sil!call g:vimim_stop()
         if mode() == 'n'
-            redraw!
+            :redraw!
         endif
     else
         let switch = s:chinese_im_switch % len(s:ui.frontends)
@@ -1107,8 +1003,6 @@ endfunction
 function! g:vimim_onekey_dump()
 " -----------------------------
     let lines = []
-    let n = virtcol("'<'") - 2
-    let space = repeat(" ", n)
     for items in s:popupmenu_list
         let line = printf('%s', items.word)
         if has_key(items, "abbr")
@@ -1117,7 +1011,9 @@ function! g:vimim_onekey_dump()
                 let line = printf('%s %s', items.abbr, items.menu)
             endif
         endif
-        let line = n && s:show_me_not ? space.line : line
+        if get(s:keyboard_list,0) ==# 'vimim'
+            let line = repeat(" ", virtcol("'<'")-2) . line
+        endif
         call add(lines, line)
     endfor
     if has("gui_running") && has("win32")
@@ -1151,7 +1047,7 @@ function! s:vimim_onekey_action(onekey)
     let two_before = current_line[col(".")-3]
     let onekey = ""
     if empty(s:ui.has_dot) && two_before !~# "[0-9a-z]"
-        let punctuations = s:punctuations
+        let punctuations = copy(s:punctuations)
         call extend(punctuations, s:evils)
         if has_key(punctuations, one_before)
             for char in keys(punctuations)
@@ -1239,7 +1135,7 @@ function! s:vimim_onekey_input(keyboard)
     let keyboard = a:keyboard
     let lines = s:vimim_get_hjkl(keyboard)
     if !empty(lines)
-        if s:hjkl_m % 4 > 0 && s:has_vimim_sort < 1
+        if s:hjkl_m % 4 > 0
             let &pumheight = 0
             for i in range(s:hjkl_m%4)
                 let lines = s:vimim_hjkl_rotation(lines)
@@ -1930,7 +1826,7 @@ function! s:vimim_initialize_frontend_punctuation()
 " -------------------------------------------------
     for char in s:valid_keys
         if has_key(s:punctuations, char)
-            if !empty(s:mycloud_plugin) || s:ui.has_dot == 1
+            if s:ui.has_dot == 1
                 unlet s:punctuations[char]
             elseif char !~# "[*.']"
                 unlet s:punctuations[char]
@@ -2609,7 +2505,7 @@ let s:VimIM += [" ====  plugin conflict  ==== {{{"]
 " -----------------------------------
 function! s:vimim_plugins_fix_start()
 " -----------------------------------
-    if s:vimim_onekey_is_tab > 1
+    if s:vimim_debug > 1
         return
     endif
     if !exists('s:acp_sid')
@@ -2657,7 +2553,7 @@ endfunction
 " ----------------------------------
 function! s:vimim_plugins_fix_stop()
 " ----------------------------------
-    if s:vimim_onekey_is_tab > 1
+    if s:vimim_debug > 1
         return
     endif
     if !empty(s:acp_sid)
@@ -2711,7 +2607,7 @@ function! IMName()
         if pumvisible()
             return s:vimim_statusline()
         endif
-    else
+    elseif !empty(&omnifunc) && &omnifunc ==# 'VimIM'
         return s:vimim_statusline()
     endif
     return ""
@@ -2976,7 +2872,7 @@ function! s:vimim_popupmenu_list(matched_list)
     let keyboard = join(s:keyboard_list,"")
     let first_in_list = get(lines,0)
     let &pumheight = s:show_me_not ? 0 : &pumheight
-    if s:hjkl_n % 2 > 0 && s:has_vimim_sort < 1
+    if s:hjkl_n % 2 > 0
         if s:show_me_not > 0
             call reverse(lines)
             let label = len(lines)
@@ -3021,9 +2917,7 @@ function! s:vimim_popupmenu_list(matched_list)
         else
             let extra_text = get(split(menu,"_"),0)
         endif
-        if s:vimim_custom_label > 0
-        \&& s:has_vimim_sort < 1
-        \&& len(lines) > 1
+        if s:vimim_custom_label > 0 && len(lines) > 1
             let labeling = s:vimim_get_labeling(label)
             if s:hjkl_n % 2 > 0 && s:show_me_not > 0
                 let label -= 1
@@ -3660,7 +3554,7 @@ let s:VimIM += [" ====  backend file     ==== {{{"]
 " ------------------------------------------------
 function! s:vimim_scan_backend_embedded_datafile()
 " ------------------------------------------------
-    if s:vimim_onekey_is_tab > 1
+    if s:vimim_debug > 1
         return
     endif
     for im in s:all_vimim_input_methods
@@ -4208,13 +4102,8 @@ function! s:vimim_check_http_executable(im)
     if empty(s:www_executable)
         if executable('curl')
             let s:www_executable = "curl -s "
-        endif
-    endif
-    if empty(s:www_executable)
-        return {}
-    else
-        if empty(s:backend.datafile) && empty(s:backend.directory)
-            exe 'let s:vimim_cloud_' . a:im . ' = 1'
+        else
+            return {}
         endif
     endif
     return s:backend.cloud[a:im]
@@ -4224,7 +4113,7 @@ endfunction
 function! s:vimim_magic_tail(keyboard)
 " ------------------------------------
     let keyboard = a:keyboard
-    if keyboard =~ '\d' || s:chinese_input_mode =~ 'dynamic'
+    if keyboard =~ '\d' || s:chinese_input_mode !~ 'onekey'
         return []
     endif
     let magic_tail = keyboard[-1:-1]
@@ -4660,18 +4549,9 @@ function! s:vimim_get_mycloud_plugin(keyboard)
     if empty(output)
         return []
     endif
-    return s:vimim_process_mycloud_output(a:keyboard, output)
-endfunction
-
-" --------------------------------------------------------
-function! s:vimim_process_mycloud_output(keyboard, output)
-" --------------------------------------------------------
-" one line typical output:  春梦 8 4420
-    if empty(a:output) || empty(a:keyboard)
-        return []
-    endif
     let menu = []
-    for item in split(a:output, '\n')
+    " one line typical output:  春梦 8 4420
+    for item in split(output, '\n')
         let item_list = split(item, '\t')
         let chinese = get(item_list,0)
         if s:localization > 0
@@ -4713,10 +4593,10 @@ function! s:vimim_initialize_i_setting()
     let s:saved_omnifunc    = &omnifunc
     let s:saved_completeopt = &completeopt
     let s:saved_laststatus  = &laststatus
+    let s:saved_statusline  = &statusline
     let s:saved_lazyredraw  = &lazyredraw
     let s:saved_showmatch   = &showmatch
     let s:saved_smartcase   = &smartcase
-    let s:saved_hlsearch    = &hlsearch
     let s:saved_pumheights  = [&pumheight,0]
 endfunction
 
@@ -4728,7 +4608,6 @@ function! s:vimim_i_setting_on()
     set nolazyredraw
     set noshowmatch
     set smartcase
-    set hlsearch
     if empty(&pumheight)
         let &pumheight=9
         let s:saved_pumheights[1]=&pumheight
@@ -4742,10 +4621,10 @@ function! s:vimim_i_setting_off()
     let &omnifunc    = s:saved_omnifunc
     let &completeopt = s:saved_completeopt
     let &laststatus  = s:saved_laststatus
+    let &statusline  = s:saved_statusline
     let &lazyredraw  = s:saved_lazyredraw
     let &showmatch   = s:saved_showmatch
     let &smartcase   = s:saved_smartcase
-    let &hlsearch    = s:saved_hlsearch
     let &pumheight   = get(s:saved_pumheights,0)
 endfunction
 
@@ -4754,21 +4633,23 @@ function! s:vimim_start()
 " -----------------------
     sil!call s:vimim_plugins_fix_start()
     sil!call s:vimim_i_setting_on()
-    sil!call s:vimim_cursor_color(1)
     sil!call s:vimim_super_reset()
     sil!call s:vimim_label_on()
     sil!call s:vimim_helper_mapping_on()
+    set noruler
+    highlight! link Cursor vimim_cursor_color
 endfunction
 
 " ----------------------
 function! g:vimim_stop()
 " ----------------------
     sil!call s:vimim_i_setting_off()
-    sil!call s:vimim_cursor_color(0)
     sil!call s:vimim_super_reset()
     sil!call s:vimim_i_map_off()
     sil!call s:vimim_plugins_fix_stop()
     sil!call s:vimim_initialize_mapping()
+    set ruler
+    highlight! link Cursor NONE
 endfunction
 
 " -----------------------------
@@ -4786,7 +4667,6 @@ function! s:vimim_reset_before_anything()
     let s:has_pumvisible = 0
     let s:popupmenu_list = []
     let s:keyboard_list  = []
-    let s:seamless_positions = []
 endfunction
 
 " -----------------------------------
@@ -4806,7 +4686,6 @@ function! g:vimim_reset_after_insert()
     let s:hjkl_n = 0
     let s:hjkl_s = 0
     let s:hjkl_x = ""
-    let s:has_vimim_sort = 0
     let s:pageup_pagedown = 0
     let s:has_no_internet = 0
     let s:matched_list = []
@@ -4871,6 +4750,7 @@ function! s:vimim_embedded_backend_engine(keyboard, search)
     let root = s:ui.root
     if empty(im)
     \|| empty(root)
+    \|| im =~ 'cloud'
     \|| s:show_me_not > 0
     \|| keyboard !~# s:valid_key
         return []
@@ -5109,7 +4989,7 @@ endfunction
 " -------------------------------------
 function! s:vimim_chinesemode_mapping()
 " -------------------------------------
-    if s:vimim_onekey_is_tab < 2
+    if s:vimim_debug < 2
         inoremap<unique><expr> <Plug>VimIM  <SID>ChineseMode()
          noremap<silent>       <C-Bslash>   :call <SID>ChineseMode()<CR>
             imap<silent>       <C-Bslash>   <Plug>VimIM
@@ -5133,13 +5013,9 @@ endfunction
 " --------------------------------
 function! s:vimim_onekey_mapping()
 " --------------------------------
-    if !hasmapto('<Plug>VimimOneKey', 'i')
-        inoremap<unique><expr> <Plug>VimimOneKey <SID>OneKey()
-    endif
-    if s:vimim_onekey_is_tab < 2
-            imap<silent> <C-^> <Plug>VimimOneKey
-        xnoremap<silent> <C-^> y:call <SID>vimim_visual_ctrl6()<CR>
-    endif
+    inoremap<unique><expr> <Plug>VimimOneKey <SID>OneKey()
+        imap<silent> <C-^> <Plug>VimimOneKey
+    xnoremap<silent> <C-^> y:call <SID>vimim_visual_ctrl6()<CR>
     if s:vimim_onekey_is_tab > 0
             imap<silent> <Tab> <Plug>VimimOneKey
         xnoremap<silent> <Tab> y:call <SID>vimim_visual_ctrl6()<CR>
