@@ -5,12 +5,11 @@
 " ======================================================
 
 let $VimIM = "easter egg:"" vimimenv<C-6><C-6> vimimrc<C-6><C-6>
-let $VimIM = "$Date: 2011-05-02 23:01:20 -0700 (Mon, 02 May 2011) $"
-let $VimIM = "$Revision: 7677 $"
+let $VimIM = "$Date: 2011-05-20 19:51:19 -0700 (Fri, 20 May 2011) $"
+let $VimIM = "$Revision: 7745 $"
 let s:url  = ["http://vim.sf.net/scripts/script.php?script_id=2506"]
 let s:url += ["http://vimim.googlecode.com/svn/vimim/vimim.vim.html"]
 let s:url += ["http://code.google.com/p/vimim/source/list"]
-let s:url += ["http://code.google.com/p/vimim/issues/list"]
 let s:url += ["http://vimim.googlecode.com/svn/trunk/plugin/vimim.cjk.txt"]
 let s:url += ["http://vimim-data.googlecode.com"]
 let s:url += ["http://groups.google.com/group/vimim"]
@@ -85,6 +84,7 @@ function! s:vimim_backend_initialization()
     sil!call s:vimim_initialize_ui()
     sil!call s:vimim_initialize_i_setting()
     sil!call s:vimim_dictionary_chinese()
+    sil!call s:vimim_dictionary_ecdict()
     sil!call s:vimim_dictionary_punctuation()
     sil!call s:vimim_dictionary_im_keycode()
     sil!call s:vimim_scan_backend_embedded_datafile()
@@ -260,13 +260,14 @@ function! s:vimim_initialize_global()
 " -----------------------------------
     let G = []
     call add(G, "g:vimim_debug")
+    call add(G, "g:vimim_chinese_input_mode")
+    call add(G, "g:vimim_esc_for_correction")
+    call add(G, "g:vimim_backslash_close_pinyin")
     call add(G, "g:vimim_ctrl_space_to_toggle")
     call add(G, "g:vimim_ctrl_h_to_toggle")
     call add(G, "g:vimim_data_file")
     call add(G, "g:vimim_data_directory")
     call add(G, "g:vimim_hjkl_directory")
-    call add(G, "g:vimim_chinese_input_mode")
-    call add(G, "g:vimim_backslash_close_pinyin")
     call add(G, "g:vimim_imode_pinyin")
     call add(G, "g:vimim_shuangpin")
     call add(G, "g:vimim_latex_suite")
@@ -286,6 +287,7 @@ function! s:vimim_initialize_global()
     " -----------------------------------
     let G = []
     call add(G, "g:vimim_onekey_hit_and_run")
+    call add(G, "g:vimim_enter_for_seamless")
     call add(G, "g:vimim_loop_pageup_pagedown")
     call add(G, "g:vimim_chinese_punctuation")
     call add(G, "g:vimim_search_next")
@@ -335,13 +337,15 @@ endfunction
 " ----------------------------------
 function! s:vimim_initialize_debug()
 " ----------------------------------
-    if isdirectory('/home/xma')
+    let hjkl = '/home/xma/hjkl/'
+    if isdirectory(hjkl)
         let g:vimim_debug = 2
         let g:vimim_toggle_list = 1
         let g:vimim_digit_4corner = 1
         let g:vimim_onekey_is_tab = 1
+        let g:vimim_esc_for_correction = 1
         let g:vimim_onekey_hit_and_run = 0
-        let g:vimim_hjkl_directory = '/home/xma/hjkl/'
+        let g:vimim_hjkl_directory = hjkl
         let g:vimim_data_directory = '/home/vimim/pinyin/'
     endif
 endfunction
@@ -482,13 +486,11 @@ function! s:vimim_egg_vimimhelp()
     call add(eggs, "官方网址 " . s:url[0] . " ")
     call add(eggs, "最新程式 " . s:url[1] . " ")
     call add(eggs, "更新报告 " . s:url[2] . " ")
-    call add(eggs, "错误报告 " . s:url[3] . " ")
-    call add(eggs, "标准字库 " . s:url[4] . " ")
-    call add(eggs, "民间词库 " . s:url[5] . " ")
-    call add(eggs, "新闻论坛 " . s:url[6] . " ")
-    call add(eggs, "最新主页 " . s:url[7] . " ")
-    call add(eggs, "论坛邮箱 " . s:url[8] . " ")
-
+    call add(eggs, "标准字库 " . s:url[3] . " ")
+    call add(eggs, "民间词库 " . s:url[4] . " ")
+    call add(eggs, "新闻论坛 " . s:url[5] . " ")
+    call add(eggs, "最新主页 " . s:url[6] . " ")
+    call add(eggs, "论坛邮箱 " . s:url[7] . " ")
     return eggs
 endfunction
 
@@ -1067,7 +1069,7 @@ function! g:vimim_onekey_dump()
             endif
         endif
         if get(s:keyboard_list,0) ==# 'vimim'
-            let line = repeat(" ", virtcol("'<'")-2) . line
+          " let line = repeat(" ", virtcol("'<'")-2) . line
         endif
         call add(lines, line)
     endfor
@@ -1207,7 +1209,9 @@ function! s:vimim_onekey_input(keyboard)
     let results = []
     " [imode] magic i: (1) English number (2) qwerty shortcut
     if keyboard =~# '^i'
-        if keyboard =~ '\d'
+        if keyboard ==# 'itoday' || keyboard ==# 'inow'
+            return s:vimim_imode_today_now(keyboard)
+        elseif keyboard =~ '\d'
             let results = s:vimim_imode_number(keyboard, 'i')
             if !empty(len(results))
                 return results
@@ -1237,7 +1241,7 @@ function! s:vimim_dot_by_dot(keyboard)
 " ------------------------------------
     let keyboard = a:keyboard
     let partition = match(keyboard, "[.']")
-    if partition > -1 && empty(s:ui.has_dot)
+    if partition > -1 && empty(s:ui.has_dot) && keyboard =~ '[^0-9.]'
         let keyboard = s:vimim_get_head(keyboard, partition)
     endif
     return keyboard
@@ -1353,8 +1357,8 @@ endfunction
 function! s:vimim_cjk_digit_filter(chinese)
 " -----------------------------------------
 " smart digital filter: 马力 7712 4002
-"   (1)   ma<C-6>       马   => filter with   7712
-"   (2) mali<C-6>       马力 => filter with 7 4002
+"   (1) mali<C-6>       马力 => filter with 7 4002
+"   (2)   ma<C-6>       马   => filter with   7712
 " -----------------------------------------
     let chinese = a:chinese
     if empty(len(s:hjkl_x)) || empty(chinese)
@@ -1669,6 +1673,64 @@ function! s:vimim_get_property(chinese, property)
         call add(bodies, chinese . spaces)
     endfor
     return [join(headers), join(bodies)]
+endfunction
+
+" ============================================= }}}
+let s:VimIM += [" ====  English2Chinese  ==== {{{"]
+" =================================================
+
+let s:translators = {}
+" ---------------------------------------------
+function! s:translators.translate(english) dict
+" ---------------------------------------------
+    let inputs = split(a:english)
+    return join(map(inputs,'get(self.dict,tolower(v:val),v:val)'), '')
+endfunction
+
+" -----------------------------------------
+function! s:vimim_imode_today_now(keyboard)
+" -----------------------------------------
+    let results = []
+    call add(results, strftime("%Y"))
+    call add(results, 'year')
+    call add(results, substitute(strftime("%m"),'0','',''))
+    call add(results, 'month')
+    call add(results, substitute(strftime("%d"),'0','',''))
+    call add(results, 'day')
+    if a:keyboard ==# 'itoday'
+        call add(results, s:space)
+        call add(results, strftime("%A"))
+    elseif a:keyboard ==# 'inow'
+        call add(results, substitute(strftime("%H"),'0','',''))
+        call add(results, 'hour')
+        call add(results, substitute(strftime("%M"),'0','',''))
+        call add(results, 'minute')
+        call add(results, substitute(strftime("%S"),'0','',''))
+        call add(results, 'second')
+    endif
+    let chinese = copy(s:translators)
+    let chinese.dict = s:ecdict
+    let today = chinese.translate(join(results))
+    return [today]
+endfunction
+
+" -----------------------------------
+function! s:vimim_dictionary_ecdict()
+" -----------------------------------
+    let s:ecdict = {}
+    let s:ecdict['year']='年'
+    let s:ecdict['month']='月'
+    let s:ecdict['day']='日'
+    let s:ecdict['hour']='时'
+    let s:ecdict['minute']='分'
+    let s:ecdict['second']='秒'
+    let s:ecdict['monday']='星期一'
+    let s:ecdict['tuesday']='星期二'
+    let s:ecdict['wednesday']='星期三'
+    let s:ecdict['thursday']='星期四'
+    let s:ecdict['friday']='星期五'
+    let s:ecdict['saturday']='星期六'
+    let s:ecdict['sunday']='星期日'
 endfunction
 
 " ============================================= }}}
@@ -2083,15 +2145,12 @@ function! s:vimim_cjk_sentence_match(keyboard)
         let head = keyboard
     elseif keyboard =~ '\d'
         if keyboard =~ '^\d' && keyboard !~ '\D'
-            " output is '6021' for input 6021272260021762
-            if len(keyboard) % 4 < 1
-                let pattern = '^\d\{' . 4 . '}'
-                let delimiter = match(keyboard, pattern)
-                if delimiter > -1
-                    let head = s:vimim_get_head(keyboard, 4)
-                endif
+            let head = keyboard
+            if len(keyboard) > 4
+                " output is '6021' for input 6021272260021762
+                let head = s:vimim_get_head(keyboard, 4)
             endif
-        elseif keyboard =~ '^\l\+\d\+\>'
+        elseif keyboard =~ '^\l\+\d\+\>' || keyboard =~ '[0-9.]'
             let head = keyboard
         elseif keyboard =~ '^\l\+\d\+'
             " output is 'wo23' for input wo23you40yigemeng
@@ -2182,7 +2241,7 @@ function! s:vimim_cjk_match(keyboard)
             let grep = keyboard . '[a-z ]'
         else
             let digit = ""
-            if keyboard =~ '^\d\+' && keyboard !~ '\D'
+            if keyboard =~ '^\d\+' && keyboard !~ '[^0-9.]'
                 " cjk free-style digit input: 7 77 771 7712"
                 let digit = keyboard
             elseif keyboard =~ '^\l\+\d\+'
@@ -2400,7 +2459,7 @@ function! s:vimim_reverse_lookup()
     let results_digit = s:vimim_get_property(chinese, 1)
     call extend(results, results_digit)
     let results_pinyin = []  " 马力 => ma3 li2
-    let result_cjjp = ""     " 马力 => ml
+    let result_cjjp = ""     "      => ml
     let items = s:vimim_get_property(chinese, 'pinyin')
     if len(items) > 0
         let pinyin_head = get(items,0)
@@ -3045,11 +3104,9 @@ function! s:vimim_scan_english_datafile()
     let s:english_lines = []
     let datafile = "vimim.txt"
     let datafile = s:vimim_check_filereadable(datafile)
-    if s:ui.im =~ 'pinyin' || s:has_cjk_file > 0
-        if !empty(datafile)
-            let s:english_file = datafile
-            let s:has_english_file = 1
-        endif
+    if !empty(datafile)
+        let s:english_file = datafile
+        let s:has_english_file = 1
     endif
 endfunction
 
@@ -4960,7 +5017,11 @@ else
     " [onekey] play with nothing but OneKey
     if s:chinese_input_mode =~ 'onekey'
         let results = s:vimim_onekey_input(keyboard)
-        if !empty(len(results)) && empty(s:english_results)
+        if empty(len(results))
+            if s:ui.root == 'cloud' && !empty(s:english_results)
+                return s:vimim_popupmenu_list(s:english_results)
+            endif
+        elseif empty(s:english_results)
             return s:vimim_popupmenu_list(results)
         endif
     endif
@@ -5048,10 +5109,14 @@ let s:VimIM += [" ====  core driver      ==== {{{"]
 " -----------------------------------
 function! s:vimim_helper_mapping_on()
 " -----------------------------------
-    inoremap <expr> <CR>    <SID>vimim_enter()
     inoremap <expr> <BS>    <SID>vimim_backspace()
-    inoremap <expr> <Esc>   <SID>vimim_esc()
     inoremap <expr> <Space> <SID>vimim_space()
+    if s:vimim_esc_for_correction > 0 || has("gui_running")
+        inoremap <expr> <Esc> <SID>vimim_esc()
+    endif
+    if s:vimim_enter_for_seamless > 0
+        inoremap <expr> <CR> <SID>vimim_enter()
+    endif
 endfunction
 
 " ------------------------------------
