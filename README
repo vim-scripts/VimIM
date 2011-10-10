@@ -1,15 +1,22 @@
 This is a mirror of http://www.vim.org/scripts/script.php?script_id=2506
 
-The VimIM is a Vim plugin designed as an independent
-IM (Input Method) to support CJK search and CJK input.
+The VimIM is a Vim plugin designed as an independent IM (Input Method)
+ to support CJK search and CJK input, with or without vim omni popup window.
  　
-VimIM是一个基于Vim的嵌入式中文输入法。
+VimIM 是一个基于Vim的嵌入式中文输入法。
 
 不启动中文输入法，不换模式，就可以输入中文。
 不打开弹出式菜单，不敲中文，也可以搜索中文。
 　　　　
 中文输入与英文输入不再相互折腾。
 中文搜索与英文搜索不再分为彼此。
+　　　　
+vim　i　vimimhelp　ctrl+6　ctrl+6
+　　
+默认热键： 　gi    （Vim正常模式）无菜单窗中文输入 
+默认热键： 　n     （Vim正常模式）无菜单窗中文搜索 
+默认热键： ctrl+6  （Vim插入模式）点石成金 
+默认热键： ctrl+\   （Vim插入模式）中文动态 
 　　　　
 最新程式： http://vimim.googlecode.com/svn/vimim/vimim.vim.html
 错误报告： http://code.google.com/p/vimim/issues/list
@@ -18,3 +25,4 @@ VimIM是一个基于Vim的嵌入式中文输入法。
 最新主页： http://vimim.googlecode.com/svn/vimim/vimim.html
 新闻论坛： http://groups.google.com/group/vimim
 论坛邮箱： vimim+subscribe@googlegroups.com  
+　　　　　　　　
