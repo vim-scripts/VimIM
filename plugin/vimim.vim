@@ -2,8 +2,8 @@
 "                   VimIM —— Vim 中文輸入法
 " ===========================================================
 let s:egg = ' vimim easter egg:' " vim i vimim CTRL-^ CTRL-^
-let s:egg = ' $Date: 2011-11-09 19:57:17 -0800 (Wed, 09 Nov 2011) $'
-let s:egg = ' $Revision: 11461 $'
+let s:egg = ' $Date: 2012-01-03 22:12:53 -0800 (Tue, 03 Jan 2012) $'
+let s:egg = ' $Revision: 11485 $'
 let s:url = ' http://vimim.googlecode.com/svn/vimim/vimim.vim.html'
 let s:url = ' http://code.google.com/p/vimim/source/list'
 let s:url = ' http://vim.sf.net/scripts/script.php?script_id=2506'
@@ -27,7 +27,7 @@ let s:VimIM  = [" ====  introduction     ==== {{{"]
 "    (3) :help i_CTRL-^  Toggle the use of language      ...
 "    (4) :help i_CTRL-_  Switch between languages        ...
 "    (5) :help i_CTRL-U  Delete all entered characters   ... (internal)
-"    (6) :help i_CTRL-L  when ... is set: go to ... mode ... (internal)
+"    (6) :help i_CTRL-L  When ... is set: Go to ... mode ... (internal)
 
 " ============================================= }}}
 let s:VimIM += [" ====  initialization   ==== {{{"]
@@ -35,7 +35,7 @@ let s:VimIM += [" ====  initialization   ==== {{{"]
 
 function! s:vimim_bare_bones_vimrc()
     set cpoptions=Bce$ go=cirMehf shm=aoOstTAI noloadplugins
-    set gcr=a:blinkon0 shellslash noswapfile viminfo= hlsearch
+    set gcr=a:blinkon0 shellslash noswapfile hlsearch viminfo=
     set fencs=ucs-bom,utf8,chinese,gb18030 gfn=Courier_New:h12:w7
     set enc=utf8 gfw=YaHei_Consolas_Hybrid,NSimSun-18030
     let unix = '/usr/local/bin:/usr/bin:/bin:.'
@@ -59,6 +59,7 @@ function! s:vimim_initialize_debug()
     if empty(&cp) && exists('hjkl') && isdirectory(hjkl)
         let g:vimim_plugin = hjkl
         let g:vimim_map = 'tab_as_gi'
+        let g:vimim_cloud = 'google,sogou,baidu,qq'
     endif
 endfunction
 
@@ -129,7 +130,7 @@ function! s:vimim_initialize_global()
     let s:rc["g:vimim_shuangpin"] = 0
     let s:rc["g:vimim_map"] = ''
     let s:rc["g:vimim_toggle"] = 0
-    let s:rc["g:vimim_cloud"] = 'google,sogou,baidu,qq'
+    let s:rc["g:vimim_cloud"] = 'baidu,sogou,qq,google'
     let s:rc["g:vimim_mycloud"] = 0
     let s:rc["g:vimim_plugin"] = s:plugin
     let s:rc["g:vimim_punctuation"] = 2
@@ -189,13 +190,13 @@ function! s:vimim_set_frontend()
     let logo = s:chinese('dscj')
     let tail = s:mode.windowless ? s:today : ''
     if s:mode.dynamic || s:mode.static
-        let logo = s:chinese('chinese', s:mode.static ? 'static' : 'dynamic')
+        let logo = s:chinese('chinese',s:mode.static?'static':'dynamic')
         let tail = s:chinese('halfwidth')
         if g:vimim_punctuation > 0 && s:toggle_punctuation > 0
             let tail = s:chinese('fullwidth')
         endif
     endif
-    let g:vimim = "VimIM" . s:space . logo .' '. s:vimim_im_chinese() .' '. tail
+    let g:vimim = "VimIM".s:space.logo.' '.s:vimim_im_chinese().' '.tail
     call s:vimim_set_title(g:vimim)
 endfunction
 
@@ -362,7 +363,7 @@ function! s:vimim_get_hjkl_game(keyboard)
         let results = s:vimim_readfile(poem) " [hjkl] file in hjkl folder
     elseif keyboard ==# "vim" || keyboard =~# "^vimim"
         let results = s:vimim_easter_chicken(keyboard)      " [hidden] egg
-    elseif keyboard =~# '^\l\+' . "'" . '\{4}$'
+    elseif keyboard =~# '\l\+' . "'" . '\{4}$'
         let results = s:vimim_get_all_clouds(keyboard[:-5]) " fuck''''
     elseif len(getreg('"')) > 3
         if keyboard == "''''"      " visual: display buffer inside omni
@@ -538,7 +539,7 @@ function! s:vimim_set_title(title)
         if s:mode.windowless
            let &l:statusline = '%{"'. a:title .'"}%<'
         else
-           let &l:statusline = g:vimim . ' %h%m%r%=%-14.(%l,%c%V%) %P %<%f'
+           let &l:statusline = g:vimim .' %h%m%r%=%-14.(%l,%c%V%) %P %<%f'
         endif
     endif
 endfunction
@@ -661,7 +662,6 @@ function! g:vimim_label(key)
     elseif s:mode.windowless && key =~ '\d'
         let key = s:vimim_windowless(key)
     endif
-    let s:has_pumvisible = pumvisible() ? 1 : 0
     sil!exe 'sil!return "' . key . '"'
 endfunction
 
@@ -683,7 +683,7 @@ function! g:vimim_page(key)
             let key = &pumheight ? page : '\<PageUp>'
         endif
     elseif key =~ "[][=-]" && empty(s:mode.onekey)
-        let key = g:vimim_punctuation(key)
+        let key = g:punctuation(key)
     endif
     sil!exe 'sil!return "' . key . '"'
 endfunction
@@ -722,19 +722,19 @@ endfunction
 function! s:vimim_punctuation_maps()
     for _ in keys(s:all_evils)
         if _ !~ s:valid_keyboard
-            exe 'lnoremap <expr> '._.' g:vimim_punctuation("'._.'")'
+            exe 'lnoremap<buffer><expr> '._.' g:punctuation("'._.'")'
         endif
     endfor
     if empty(s:ui.quote)
-        lnoremap ' <C-R>=g:vimim_single_quote()<CR>
+        lnoremap<buffer> ' <C-R>=g:vimim_single_quote()<CR>
     endif
     if g:vimim_punctuation == 3
-        lnoremap    "     <C-R>=g:vimim_double_quote()<CR>
-        lnoremap <Bslash> <C-R>=g:vimim_bslash()<CR>
+        lnoremap<buffer>    "     <C-R>=g:vimim_double_quote()<CR>
+        lnoremap<buffer> <Bslash> <C-R>=g:vimim_bslash()<CR>
     endif
 endfunction
 
-function! g:vimim_punctuation(key)
+function! g:punctuation(key)
     let key = a:key
     if s:toggle_punctuation > 0
         if pumvisible() || getline(".")[col(".")-2] !~ '\w'
@@ -870,7 +870,6 @@ function! g:vimim_space()
         let key = s:vimim_onekey_action()
     endif
     call s:vimim_reset_after_insert()
-    let s:has_pumvisible = pumvisible() ? 1 : 0
     sil!exe 'sil!return "' . key . '"'
 endfunction
 
@@ -1016,9 +1015,10 @@ function! s:vimim_onekey_evils()
                 return " " " no transfer if punctuation punctuation
             endif
         endfor
-        let bs = onekey_evils[one] " make Chinese punctuation
-        let bs = one == "'" ? g:vimim_single_quote() : bs
-        let bs = one == '"' ? g:vimim_double_quote() : bs
+        let bs = onekey_evils[one]  " make Chinese punctuation
+        if one == '"' || one == '"'
+            let bs .= '\<Left>'
+        endif
         let key = "\<Left>\<Delete>" . bs
     endif
     sil!exe 'sil!return "' . key . '"'
@@ -1062,19 +1062,19 @@ function! s:vimim_set_keyboard_maps()
     let both_dynamic = s:mode.dynamic || s:gi_dynamic ? 1 : 0
     if both_dynamic
         for char in s:valid_keys
-            sil!exe 'lnoremap <silent> ' . char . ' ' .
+            sil!exe 'lnoremap<silent><buffer> ' . char . ' ' .
             \ '<C-R>=g:wubi()<CR>' . char . '<C-R>=g:vimim()<CR>'
         endfor
     elseif s:mode.static
         for char in s:valid_keys
-            sil!exe 'lnoremap <silent> ' . char . ' ' .  char
+            sil!exe 'lnoremap<silent><buffer> ' . char . ' ' .  char
         endfor
     else
         let common_punctuations += split(". ,")
         let common_labels += s:abcd[1:]
         let pqwertyuio = s:vimim_cjk() ?  s:qwer : []
         for _ in pqwertyuio + split("h j k l m n / ? s")
-             sil!exe 'lnoremap<expr> '._.' g:vimim_hjkl("'._.'")'
+             sil!exe 'lnoremap<buffer><expr> '._.' g:vimim_hjkl("'._.'")'
         endfor
     endif
     if g:vimim_punctuation < 0
@@ -1083,11 +1083,11 @@ function! s:vimim_set_keyboard_maps()
     endif
     for _ in s:mode.windowless ? [] : common_punctuations
         if _ !~ s:valid_keyboard
-            sil!exe 'lnoremap <expr> '._.' g:vimim_page("'._.'")'
+            sil!exe 'lnoremap<buffer><expr> '._.' g:vimim_page("'._.'")'
         endif
     endfor
     for _ in common_labels
-        sil!exe 'lnoremap <expr> '._.' g:vimim_label("'._.'")'
+        sil!exe 'lnoremap<buffer><expr> '._.' g:vimim_label("'._.'")'
     endfor
 endfunction
 
@@ -1268,7 +1268,8 @@ function! s:vimim_imode_today_now(keyboard)
     let two .= " 月 日 时 分 秒"
     let chinese = copy(s:translators)
     let chinese.dict = s:vimim_key_value_hash(one, two)
-    let time  = strftime("%Y") . ' year  '
+    let time  = '公元'
+    let time .= strftime("%Y") . ' year  '
     let time .= strftime("%m") . ' month '
     let time .= strftime("%d") . ' day   '
     if a:keyboard ==# 'itoday'
@@ -2558,7 +2559,8 @@ function! s:vimim_get_cloud_baidu(keyboard)
         let output_list = get(eval(output),0)
     endif
     for item_list in output_list
-        let english = strpart(a:keyboard, get(item_list,1))
+        let keyboard = substitute(a:keyboard,'\W','','g')
+        let english = strpart(keyboard, get(item_list,1))
         call add(results, get(item_list,0) . english)
     endfor
     return results
@@ -2810,16 +2812,16 @@ function! s:vimim_start()
     sil!call s:vimim_set_vimrc()
     sil!call s:vimim_set_frontend()
     sil!call s:vimim_set_keyboard_maps()
-    lnoremap <silent> <expr> <BS>    g:vimim_backspace()
-    lnoremap <silent> <expr> <Esc>   g:vimim_esc()
-    lnoremap <silent> <expr> <C-U>   g:vimim_one_key_correction()
-    lnoremap <silent> <expr> <C-L>   g:vimim_cycle_vimim()
+    lnoremap <silent><buffer> <expr> <BS>    g:vimim_backspace()
+    lnoremap <silent><buffer> <expr> <Esc>   g:vimim_esc()
+    lnoremap <silent><buffer> <expr> <C-U>   g:vimim_one_key_correction()
+    lnoremap <silent><buffer> <expr> <C-L>   g:vimim_cycle_vimim()
     if s:ui.im =~ 'array'
-        lnoremap <silent> <expr> <CR>    g:vimim_space()
-        lnoremap <silent> <expr> <Space> g:vimim_pagedown()
+        lnoremap <silent><buffer> <expr> <CR>    g:vimim_space()
+        lnoremap <silent><buffer> <expr> <Space> g:vimim_pagedown()
     else
-        lnoremap <silent> <expr> <CR>    g:vimim_enter()
-        lnoremap <silent> <expr> <Space> g:vimim_space()
+        lnoremap <silent><buffer> <expr> <CR>    g:vimim_enter()
+        lnoremap <silent><buffer> <expr> <Space> g:vimim_space()
     endif
     let key = ''
     if empty(s:ctrl6)
@@ -2875,16 +2877,16 @@ function! s:vimim_super_reset()
 endfunction
 
 function! s:vimim_reset_before_anything()
+    let s:has_shuangpin_transform = 0   " todo
     let s:mode = s:onekey
-    let s:gi_dynamic_on = 0
+    let s:keyboard = ""
     let s:omni = 0
     let s:ctrl6 = 0
     let s:switch = 0
     let s:toggle_im = 0
     let s:smart_enter = 0
-    let s:has_pumvisible = 0
+    let s:gi_dynamic_on = 0
     let s:toggle_punctuation = 1
-    let s:keyboard = ""
     let s:popup_list = []
 endfunction
 
@@ -3001,7 +3003,7 @@ else
             let rules = s:vimim_shuangpin_rules(g:vimim_shuangpin, rules)
             let s:shuangpin_table = s:vimim_create_shuangpin_table(rules)
         endif
-        if empty(s:has_pumvisible)
+        if empty(s:has_shuangpin_transform)
             let keyboard = s:vimim_shuangpin_transform(keyboard)
             let s:keyboard = keyboard
         endif
@@ -3086,7 +3088,7 @@ function! s:vimim_popupmenu_list(lines)
             endif
             let label2 = s:english.line =~ chinese ? '*' : ' '
             let titleline = printf('%3s ', label2 . titleline)
-            let chinese .= empty(tail) ? '' : tail
+            let chinese .= empty(tail) || tail == "'" ? '' : tail
             let complete_items["abbr"] = titleline . chinese
             let complete_items["menu"] = menu
         endif
