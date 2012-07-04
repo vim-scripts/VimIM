@@ -19,6 +19,7 @@ VimIM 是一个基于Vim的嵌入式中文输入法。
 　　　　　　
 　　　　　　　　　　　　　　　　　
 最新程式： http://vimim.googlecode.com/svn/vimim/vimim.vim.html
+项目管理： https://github.com/vimim/
 错误报告： http://code.google.com/p/vimim/issues/list
 最新主页： http://vimim.googlecode.com/svn/vimim/vimim.html
 新闻论坛： http://groups.google.com/group/vimim
@@ -32,21 +33,24 @@ VimIM 是一个基于Vim的嵌入式中文输入法。
 　　　　　　　　　　　　　　　　　　　　　　　
 vim　i　vimim　CTRL-^　CTRL-^　　
 　　　　　　　　
-日期：2011年11月10日　星期四 
-電腦：win32  0.048333 seconds 
-版本：gvim.exe=703　vimim.vim=11461
-編碼：utf-8　ucs-bom,utf8,chinese,gb18030 
-環境：English_United States.1252 
-詞庫：雲詞庫：谷歌雲　搜狗雲　百度雲　ＱＱ雲　 
-聯網：Python2 Interface to Vim 
-輸入：VimIM　點石成金 　谷歌雲 　 
-選項：vimimrc 
-  " :let g:vimim_cloud = 'google,sogou,baidu,qq'  
-  " :let g:vimim_map = ''  
+日期：公元2012年7月4日　星期三 
+电脑：win32  0.011714 seconds 
+版本：gvim.exe=703 
+编码：utf-8　ucs-bom,utf8,chinese,gb18030 
+环境：English_United States.1252 
+词库：标准字库：C:/var/mobile/vim/vimfiles/plugin/vimim.cjk.txt 
+词库：英文词库：C:/var/mobile/vim/vimfiles/plugin/vimim.txt 
+词库：拼音词库：C:/var/mobile/vim/vimfiles/plugin/vimim.gbk.bsddb 
+词库：云词库：谷歌云　搜狗云　 
+联网：Python2 Interface to Vim 
+输入：VimIM　拼音　四角号码　英文　 
+选项：vimimrc 
+    :let g:vimim_cloud = 'google,sogou,baidu,qq'  
+    :let g:vimim_map = 'tab_as_gi'  
   " :let g:vimim_mode = 'dynamic'  
   " :let g:vimim_mycloud = 0  
-  " :let g:vimim_plugin = 'C:/home/xma/vim/vimfiles/plugin'  
+  " :let g:vimim_plugin = 'C:/var/mobile/vim/vimfiles/plugin'  
   " :let g:vimim_punctuation = 2  
   " :let g:vimim_shuangpin = 0  
-  " :let g:vimim_toggle = 'google,sogou,baidu,qq' 
-　　　　　　　　　　　　
+  " :let g:vimim_toggle = 'pinyin,google,sogou' 
+　

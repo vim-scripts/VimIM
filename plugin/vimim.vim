@@ -2,8 +2,6 @@
 "                   VimIM —— Vim 中文輸入法
 " ===========================================================
 let s:egg = ' vimim easter egg:' " vim i vimim CTRL-^ CTRL-^
-let s:egg = ' $Date: 2012-01-03 22:12:53 -0800 (Tue, 03 Jan 2012) $'
-let s:egg = ' $Revision: 11485 $'
 let s:url = ' http://vimim.googlecode.com/svn/vimim/vimim.vim.html'
 let s:url = ' http://code.google.com/p/vimim/source/list'
 let s:url = ' http://vim.sf.net/scripts/script.php?script_id=2506'
@@ -53,11 +51,10 @@ let g:vimim_profile = reltime()
 let s:plugin = expand("<sfile>:p:h")
 
 function! s:vimim_initialize_debug()
-    " gvim -u /home/xma/vim/vimfiles/plugin/vimim.vim
+    " gvim -u /var/mobile/vim/vimfiles/plugin/vimim.vim
     " gvim -u /home/vimim/svn/vimim/trunk/plugin/vimim.vim
-    let hjkl = simplify(s:plugin . '/../../../hjkl/')
-    if empty(&cp) && exists('hjkl') && isdirectory(hjkl)
-        let g:vimim_plugin = hjkl
+    let s:plugon = simplify(s:plugin . '/../../../hjkl/')
+    if empty(&cp) && exists('s:plugon') && isdirectory(s:plugon)
         let g:vimim_map = 'tab_as_gi'
         let g:vimim_cloud = 'google,sogou,baidu,qq'
     endif
@@ -120,6 +117,7 @@ function! s:vimim_initialize_global()
     let s:az_list = map(range(97,122),"nr2char(".'v:val'.")")
     let s:valid_keys = s:az_list
     let s:valid_keyboard = "[0-9a-z']"
+    let s:valid_wubi_keyboard = "[0-9a-z]"
     let s:shengmu_list = split('b p m f d t l n g k h j q x r z c s y w')
     let s:pumheights = { 'current' : &pumheight, 'saved' : &pumheight }
     let s:smart_quotes = { 'single' : 1, 'double' : 1 }
@@ -274,15 +272,13 @@ function! s:vimim_egg_vimim()
     endfor
     let time = reltimestr(g:vimim_profile) . ' seconds'
     call add(eggs, s:chinese('computer', s:colon) . os . time)
-    let revision = get(split(s:egg),1)
-    let revision = empty(revision) ?  ""  : "vimim.vim=" . revision
-    let revision = v:progname ."=". v:version  . s:space . revision
+    let revision = v:progname ."=". v:version
     call add(eggs, s:chinese('revision', s:colon) . revision)
     let encoding = s:chinese('encoding', s:colon) . &encoding
     call add(eggs, encoding . s:space . &fileencodings)
     call add(eggs, s:chinese('env', s:colon) . v:lc_time)
     let db = s:chinese('database', s:colon)
-    let input = g:vimim . s:space
+    let input = "VimIM" . s:space . s:vimim_im_chinese() . s:space
     if len(s:cjk.filename)
         let input .= s:chinese('4corner') . s:space
         call add(eggs, db.s:chinese('cjk',s:colon).s:cjk.filename)
@@ -303,14 +299,14 @@ function! s:vimim_egg_vimim()
     let exe = s:http_exe =~ 'Python' ? '' : "HTTP executable: "
     call add(eggs, cloud)
     call add(eggs, s:chinese('network', s:colon) . exe . s:http_exe)
-    call add(eggs, s:chinese('input',  s:colon) . input)
-    call add(eggs, s:chinese('option',  s:colon) . 'vimimrc')
+    call add(eggs, s:chinese('input', s:colon) . input)
+    call add(eggs, s:chinese('option', s:colon) . 'vimimrc')
     let results = map(eggs + s:vimim_egg_vimimrc(), 'v:val . " " ')
     return results
 endfunction
 
 " ============================================= }}}
-let s:VimIM += [" ====  hjkl  vimimgame  ==== {{{"]
+let s:VimIM += [" ====  hjkl vimimgame   ==== {{{"]
 " =================================================
 
 function! s:vimim_cache()
@@ -545,6 +541,9 @@ function! s:vimim_set_title(title)
 endfunction
 
 function! s:vimim_im_chinese()
+    if empty(s:ui.im)
+        return "==broken python interface to vim==" 
+    endif
     let backend = s:backend[s:ui.root][s:ui.im]
     let title = has_key(s:keycodes, s:ui.im) ? backend.chinese : ''
     if s:ui.im =~ 'wubi'
@@ -805,6 +804,7 @@ function! g:vimim_tab(gi)
     let key = "\t"
     if empty(len(s:vimim_left()))
     elseif pumvisible() || s:ctrl6
+        let @0 = getline(".")  " undo if dump out by accident
         let key = s:vimim_screenshot()
     else
         let s:mode = a:gi? s:windowless : s:onekey
@@ -901,10 +901,9 @@ function! g:vimim_one_key_correction()
     " :help i_CTRL-U  Delete all entered characters ...
     let key = nr2char(21)
     if s:mode.windowless || s:mode.static && pumvisible()
-        if s:omni " one_key_correction " gi m space a space ctrl+u space
+        if s:omni " one_key_correction " gi m space a space ctrl+u
             let s:omni = -1            " gi mamahuhu space ctrl+u ctrl+u
             let key  = '\<C-E>\<C-R>=g:vimim()\<CR>\<Left>\<Delete>'
-            let key .= '\<C-R>=g:vimim_enter()\<CR>'
         endif
     elseif pumvisible()
         let range = col(".") - 1 - s:starts.column
@@ -1646,10 +1645,13 @@ function! s:vimim_get_english(keyboard)
     return oneline
 endfunction
 
-function! s:vimim_filereadable(file)
-    let full_path_datafile = s:plugin . a:file
-    if filereadable(full_path_datafile)
-        return full_path_datafile
+function! s:vimim_filereadable(filename)
+    let datafile_1 = s:plugin . a:filename
+    let datafile_2 = s:plugon . a:filename
+    if filereadable(datafile_1)
+        return datafile_1
+    elseif filereadable(datafile_2)
+        return datafile_2
     endif
     return ""
 endfunction
@@ -1947,54 +1949,6 @@ endfunction
 " ============================================= }}}
 let s:VimIM += [" ====  python2 python3  ==== {{{"]
 " =================================================
-
-function! g:vimim_gmail() range abort
-" [dream] one click to send email from within the current vim buffer
-" [usage] :call g:vimim_gmail()
-" [vimrc] :let  g:gmails={'login':'x','passwd':'x','to':'x','bcc':'x'}
-if empty(has('python')) && empty(has('python3'))
-    echo 'No magic Python Interface to Vim' | return ""
-endif
-let firstline = a:firstline
-let  lastline = a:lastline
-if lastline - firstline < 1
-    let firstline = 1
-    let lastline = "$"
-endif
-let g:gmails.msg = getline(firstline, lastline)
-let python = has('python3') && &relativenumber ? 'python3' : 'python'
-exe python . ' << EOF'
-import vim
-from smtplib import SMTP
-from datetime import datetime
-from email.mime.text import MIMEText
-def vimim_gmail():
-    gmails = vim.eval('g:gmails')
-    vim.command('sil!unlet g:gmails.bcc')
-    now = datetime.now().strftime("%A %m/%d/%Y")
-    gmail_login  = gmails.get("login","")
-    if len(gmail_login) < 8: return None
-    gmail_passwd = gmails.get("passwd")
-    gmail_to     = gmails.get("to")
-    gmail_bcc    = gmails.get("bcc","")
-    gmail_msg    = gmails.get("msg")
-    gamil_all = [gmail_to] + gmail_bcc.split()
-    msg = str("\n".join(gmail_msg))
-    rfc2822 = MIMEText(msg, 'plain', 'utf-8')
-    rfc2822['From'] = gmail_login
-    rfc2822['To'] = gmail_to
-    rfc2822['Subject'] = now
-    rfc2822.set_charset('utf-8')
-    try:
-        gmail = SMTP('smtp.gmail.com', 587, 120)
-        gmail.starttls()
-        gmail.login(gmail_login, gmail_passwd[::-1])
-        gmail.sendmail(gmail_login, gamil_all, rfc2822.as_string())
-    finally:
-        gmail.close()
-vimim_gmail()
-EOF
-endfunction
 
 function! s:vimim_initialize_bsddb(datafile)
 :sil!python << EOF
@@ -2852,7 +2806,7 @@ function! s:vimim_save_vimrc()
 endfunction
 
 function! s:vimim_set_vimrc()
-    set title noshowmatch shellslash imdisable
+    set title noshowmatch shellslash
     set completeopt=menuone
     set complete=.
     set nolazyredraw
@@ -2913,6 +2867,7 @@ let s:VimIM += [" ====  core engine      ==== {{{"]
 " =================================================
 
 function! VimIM(start, keyboard)
+let valid_keyboard = s:wubi ? s:valid_wubi_keyboard : s:valid_keyboard
 if a:start
     let cursor_positions = getpos(".")
     let start_row = cursor_positions[1]
@@ -2926,7 +2881,7 @@ if a:start
         let last_seen_nonsense_column = copy(start_column)
         let all_digit = 1
         while start_column
-            if before =~# s:valid_keyboard
+            if before =~# valid_keyboard
                 let start_column -= 1
                 if before !~# "[0-9']" || s:ui.im =~ 'phonetic'
                     let last_seen_nonsense_column = start_column
@@ -2967,7 +2922,7 @@ else
     if !empty(str2nr(keyboard)) " for digit input: 23554022100080204420
         let keyboard = get(split(s:keyboard),0)
     endif
-    if empty(keyboard) || keyboard !~ s:valid_keyboard
+    if empty(keyboard) || keyboard !~ valid_keyboard
         return []
     else   " [english] first check if it is english or not
         let s:english.line = s:vimim_get_english(keyboard)
